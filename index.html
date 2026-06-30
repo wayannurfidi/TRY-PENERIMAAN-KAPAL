@@ -1,0 +1,2231 @@
+<!DOCTYPE html>
+<html lang="id" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard Penerimaan Kapal — Lampung</title>
+<!-- SheetJS untuk export Excel -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<!-- jsPDF + autoTable untuk export PDF -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+<style>
+  :root {
+    --font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Helvetica Neue", Arial, sans-serif;
+    --font-display: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Helvetica Neue", Arial, sans-serif;
+    --font-mono: "SF Mono", ui-monospace, "Cascadia Code", "Menlo", "Consolas", monospace;
+  }
+</style>
+<style>
+:root {
+  --bg:#0d1117;--bg2:#161b22;--bg3:#1c2128;--bg4:#21262d;
+  --border:rgba(255,255,255,0.08);--border2:rgba(255,255,255,0.15);
+  --text:#e6edf3;--muted:#7d8590;--dim:#30363d;
+  --teal:#39d2c0;--teal-dim:rgba(57,210,192,0.12);--teal-border:rgba(57,210,192,0.3);
+  --cyan:#58d9f9;--cyan-dim:rgba(88,217,249,0.1);
+  --amber:#ffa657;--amber-dim:rgba(255,166,87,0.12);--amber-border:rgba(255,166,87,0.3);
+  --red:#ff7b72;--red-dim:rgba(255,123,114,0.12);--red-border:rgba(255,123,114,0.3);
+  --green:#3fb950;--green-dim:rgba(63,185,80,0.12);--green-border:rgba(63,185,80,0.3);
+  --blue:#58a6ff;--blue-dim:rgba(88,166,255,0.12);--blue-border:rgba(88,166,255,0.3);
+  --purple:#bc8cff;--purple-dim:rgba(188,140,255,0.12);
+  --shadow:0 1px 4px rgba(0,0,0,0.5),0 4px 16px rgba(0,0,0,0.3);
+  --navbar-h:52px;
+}
+[data-theme="light"] {
+  --bg:#f5f6f8;--bg2:#ffffff;--bg3:#f0f2f5;--bg4:#e8eaed;
+  --border:rgba(0,0,0,0.08);--border2:rgba(0,0,0,0.15);
+  --text:#1a1e27;--muted:#6b7280;--dim:#d1d5db;
+  --teal:#0e9d87;--teal-dim:rgba(14,157,135,0.1);--teal-border:rgba(14,157,135,0.3);
+  --cyan:#0284c7;--cyan-dim:rgba(2,132,199,0.1);
+  --amber:#d97706;--amber-dim:rgba(217,119,6,0.1);--amber-border:rgba(217,119,6,0.3);
+  --red:#dc2626;--red-dim:rgba(220,38,38,0.1);--red-border:rgba(220,38,38,0.3);
+  --green:#16a34a;--green-dim:rgba(22,163,74,0.1);--green-border:rgba(22,163,74,0.3);
+  --blue:#2563eb;--blue-dim:rgba(37,99,235,0.1);--blue-border:rgba(37,99,235,0.3);
+  --purple:#7c3aed;--purple-dim:rgba(124,58,237,0.1);
+  --shadow:0 1px 3px rgba(0,0,0,0.08),0 4px 12px rgba(0,0,0,0.06);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{font-size:14px;scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:var(--font-sans);-webkit-font-smoothing:antialiased;min-height:100vh;padding-top:var(--navbar-h);transition:background 0.25s,color 0.25s}
+
+/* ── NAVBAR ── */
+.navbar{position:fixed;top:0;left:0;right:0;height:var(--navbar-h);background:var(--bg2);border-bottom:1px solid var(--border);display:grid;grid-template-columns:1fr auto 1fr;align-items:center;padding:0 20px;z-index:200;gap:12px;transition:background 0.25s,border-color 0.25s}
+.nav-brand{display:flex;align-items:center;gap:10px}
+.nav-logo{width:32px;height:32px;background:linear-gradient(135deg,var(--teal),var(--blue));border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0}
+.nav-title{font-family:var(--font-display);font-weight:700;font-size:0.95rem;letter-spacing:-0.01em;color:var(--text)}
+.nav-sub{font-size:0.68rem;color:var(--muted);margin-top:1px;font-family:var(--font-mono)}
+.nav-center{display:flex;justify-content:center;align-items:center}
+.nav-update{display:flex;align-items:center;gap:5px;font-size:0.72rem;font-family:var(--font-mono);color:var(--muted);background:var(--bg3);border:1px solid var(--border);border-radius:999px;padding:4px 12px;white-space:nowrap;transition:background 0.25s,border-color 0.25s}
+.nav-update strong{color:var(--teal)}
+.nav-update svg{color:var(--muted);flex-shrink:0}
+.nav-update-sep{opacity:0.4}
+.nav-actions{display:flex;align-items:center;gap:7px;justify-content:flex-end}
+.nav-btn{display:flex;align-items:center;gap:5px;font-size:0.73rem;padding:6px 13px;border-radius:7px;border:none;cursor:pointer;font-family:var(--font-sans);font-weight:600;transition:all 0.15s;white-space:nowrap}
+.nav-btn-refresh{background:#238636;color:#fff}
+.nav-btn-refresh:hover{background:#2ea043}
+.nav-btn-refresh.spinning svg{animation:spin 1s linear infinite}
+.nav-sep{width:1px;height:20px;background:var(--border2);margin:0 2px}
+.theme-btn{width:32px;height:32px;border-radius:7px;border:1px solid var(--border);background:var(--bg3);color:var(--muted);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.15s;flex-shrink:0}
+.theme-btn:hover{border-color:var(--border2);color:var(--text);background:var(--bg4)}
+@keyframes spin{to{transform:rotate(360deg)}}
+.border-red{border-color:var(--red)!important}
+
+/* ── WRAP ── */
+.wrap{max-width:1440px;margin:0 auto;padding:0 20px 60px}
+
+/* ── STATS STRIP ── */
+.stats-strip{display:grid;grid-template-columns:repeat(5,1fr);gap:0;border-bottom:1px solid var(--border);margin-bottom:20px}
+.stat-card{padding:16px 20px;border-right:1px solid var(--border);position:relative}
+.stat-card:last-child{border-right:none}
+.stat-card::after{content:'';position:absolute;bottom:0;left:20px;right:20px;height:2px;border-radius:2px;opacity:0}
+.stat-card:hover::after{opacity:1}
+.stat-card:nth-child(1)::after{background:var(--teal)}
+.stat-card:nth-child(2)::after{background:var(--cyan)}
+.stat-card:nth-child(3)::after{background:var(--amber)}
+.stat-card:nth-child(4)::after{background:var(--blue)}
+.stat-card:nth-child(5)::after{background:var(--purple)}
+.stat-label{font-size:0.63rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;font-family:var(--font-mono);margin-bottom:6px}
+.stat-value{font-family:var(--font-display);font-size:2rem;font-weight:800;line-height:1;letter-spacing:-0.03em}
+.stat-sub{font-size:0.63rem;color:var(--muted);margin-top:5px;font-family:var(--font-mono)}
+.sv-teal{color:var(--teal)}.sv-cyan{color:var(--cyan)}.sv-amber{color:var(--amber)}
+.sv-green{color:var(--green)}.sv-red{color:var(--red)}.sv-blue{color:var(--blue)}.sv-purple{color:var(--purple)}
+
+/* ── STATUS BAR ── */
+.status-bar{display:flex;align-items:center;gap:8px;margin-bottom:14px;font-size:0.72rem;font-family:var(--font-mono);padding:0 2px}
+.status-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.dot-ok{background:var(--green)}.dot-loading{background:var(--amber);animation:pulse 1s ease infinite}.dot-err{background:var(--red)}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.3}}
+.status-text{color:var(--muted)}
+
+/* ── TOOLBAR ── */
+.toolbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:14px}
+.search-wrap{position:relative;flex:1;min-width:200px}
+.search-wrap svg{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--muted);pointer-events:none}
+.search-input{width:100%;background:var(--bg2);border:1px solid var(--border);border-radius:7px;padding:7px 11px 7px 32px;font-size:0.8rem;color:var(--text);font-family:var(--font-sans);outline:none;transition:border-color 0.2s}
+.search-input::placeholder{color:var(--muted)}
+.search-input:focus{border-color:var(--teal-border)}
+.filter-group{display:flex;gap:4px;flex-wrap:wrap}
+.fbtn{font-size:0.71rem;padding:5px 11px;border-radius:999px;border:1px solid var(--border);background:var(--bg2);color:var(--muted);cursor:pointer;font-family:var(--font-sans);transition:all 0.15s;white-space:nowrap}
+.fbtn:hover{border-color:var(--border2);color:var(--text)}
+.fbtn.on{background:var(--teal-dim);border-color:var(--teal-border);color:var(--teal)}
+
+/* Export dropdown */
+.export-wrap{position:relative}
+.export-btn{display:flex;align-items:center;gap:5px;font-size:0.72rem;padding:6px 12px;border-radius:7px;border:1px solid var(--border);background:var(--bg2);color:var(--muted);cursor:pointer;font-family:var(--font-sans);transition:all 0.15s;white-space:nowrap}
+.export-btn:hover{border-color:var(--border2);color:var(--text)}
+.export-menu{display:none;position:absolute;right:0;top:calc(100% + 6px);background:var(--bg2);border:1px solid var(--border2);border-radius:10px;overflow:hidden;z-index:100;min-width:160px;box-shadow:0 8px 24px rgba(0,0,0,0.5)}
+.export-menu.open{display:block}
+.export-item{display:flex;align-items:center;gap:8px;width:100%;padding:8px 14px;font-size:0.76rem;font-family:var(--font-sans);background:none;border:none;color:var(--text);cursor:pointer;text-align:left;transition:background 0.15s}
+.export-item:hover{background:var(--bg3)}
+.export-item.xl{color:var(--green)}.export-item.pdf{color:var(--red)}
+
+/* ── TABLE HEADER ── */
+.table-header{display:grid;grid-template-columns:2fr 1.3fr 0.9fr 0.9fr 0.9fr 1fr 90px 32px;gap:10px;padding:6px 14px;font-size:0.62rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;font-family:var(--font-mono);margin-bottom:5px;border-bottom:1px solid var(--border)}
+
+/* ── CARDS ── */
+.ships{display:flex;flex-direction:column;gap:4px}
+.ship-card{background:var(--bg2);border:1px solid var(--border);border-radius:10px;overflow:hidden;transition:border-color 0.2s;animation:fadeUp 0.35s ease both}
+.ship-card:hover{border-color:var(--border2)}
+@keyframes fadeUp{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.ship-row{display:grid;grid-template-columns:2fr 1.3fr 0.9fr 0.9fr 0.9fr 1fr 90px 32px;gap:10px;padding:12px 14px;align-items:center;cursor:pointer}
+.sname{font-family:var(--font-display);font-size:0.86rem;font-weight:700;color:var(--text);letter-spacing:-0.01em}
+.sroute{font-size:0.66rem;color:var(--muted);margin-top:3px;display:flex;align-items:center;gap:3px;flex-wrap:wrap}
+.cell-text{font-size:0.77rem;color:var(--text)}
+.cell-sub{font-size:0.66rem;color:var(--muted);margin-top:2px}
+.badge{display:inline-flex;align-items:center;gap:3px;font-size:0.63rem;padding:2px 8px;border-radius:999px;font-family:var(--font-mono);white-space:nowrap;margin:1px 1px 0 0}
+.badge-done{background:var(--green-dim);color:var(--green);border:1px solid var(--green-border)}
+.badge-partial{background:var(--amber-dim);color:var(--amber);border:1px solid var(--amber-border)}
+.badge-wait{background:var(--red-dim);color:var(--red);border:1px solid var(--red-border)}
+.badge-anchor{background:var(--teal-dim);color:var(--teal);border:1px solid var(--teal-border)}
+.prog-cell{display:flex;flex-direction:column;gap:3px}
+.prog-bar-wrap{height:4px;background:var(--dim);border-radius:999px;overflow:hidden}
+.prog-fill{height:100%;border-radius:999px;transition:width 0.6s cubic-bezier(0.4,0,0.2,1)}
+.prog-pct{font-size:0.66rem;color:var(--muted);font-family:var(--font-mono)}
+.chevron-btn{background:none;border:none;color:var(--muted);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:transform 0.2s,color 0.2s;padding:4px}
+.chevron-btn.open{transform:rotate(180deg);color:var(--teal)}
+
+/* ── DETAIL ── */
+.detail-panel{border-top:1px solid var(--border);max-height:0;overflow:hidden;transition:max-height 0.35s cubic-bezier(0.4,0,0.2,1)}
+.detail-panel.open{max-height:900px}
+.detail-inner{padding:14px 14px 18px;background:var(--bg3)}
+.detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.det-section h4{font-size:0.62rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);font-family:var(--font-mono);margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid var(--border)}
+.prod-item{display:flex;justify-content:space-between;align-items:flex-start;padding:8px 0;border-bottom:1px solid var(--border)}
+.prod-item:last-child{border-bottom:none;padding-bottom:0}
+.prod-name{font-size:0.77rem;color:var(--text)}
+.prod-right{text-align:right;min-width:120px}
+.prod-do{font-size:0.77rem;font-weight:600;color:var(--text);font-family:var(--font-mono)}
+.prod-gr{font-size:0.66rem;color:var(--muted);margin-top:1px}
+.prod-sisa{font-size:0.66rem;margin-top:1px;font-family:var(--font-mono)}
+.prod-pbar{height:3px;background:var(--dim);border-radius:999px;overflow:hidden;margin-top:5px}
+.prod-pfill{height:100%;border-radius:999px}
+.info-rows{display:flex;flex-direction:column;gap:5px}
+.info-row{display:flex;justify-content:space-between;align-items:flex-start;font-size:0.77rem;gap:8px;padding:3px 0;border-bottom:1px solid rgba(255,255,255,0.04)}
+.info-row:last-child{border-bottom:none}
+.info-key{color:var(--muted);flex-shrink:0;font-size:0.73rem}
+.info-val{color:var(--text);font-family:var(--font-mono);font-size:0.73rem;text-align:right}
+.keterangan-box{margin-top:10px;padding:8px 11px;background:var(--teal-dim);border:1px solid var(--teal-border);border-radius:8px;font-size:0.73rem;color:var(--teal);display:flex;gap:7px;align-items:flex-start}
+.sisa-highlight{margin-top:10px;padding:9px 12px;background:var(--amber-dim);border:1px solid var(--amber-border);border-radius:8px;display:flex;justify-content:space-between;align-items:center}
+.sisa-label{font-size:0.7rem;color:var(--amber);font-family:var(--font-mono)}
+.sisa-value{font-size:1rem;font-weight:700;font-family:var(--font-display);color:var(--amber)}
+
+/* ── SKELETON ── */
+.skeleton{background:linear-gradient(90deg,var(--bg2) 25%,var(--bg3) 50%,var(--bg2) 75%);background-size:200% 100%;animation:shimmer 1.4s infinite;border-radius:8px;height:50px;margin-bottom:4px}
+@keyframes shimmer{to{background-position:-200% 0}}
+.no-result{text-align:center;padding:48px;color:var(--muted);font-size:0.86rem;display:none}
+.no-result svg{display:block;margin:0 auto 10px;opacity:0.3}
+.footer{margin-top:32px;padding-top:14px;border-top:1px solid var(--border);text-align:center;font-size:0.68rem;color:var(--muted);font-family:var(--font-mono)}
+
+@media(max-width:900px){
+  .stats-strip{grid-template-columns:repeat(2,1fr)}
+  .stat-card{border-right:none;border-bottom:1px solid var(--border)}
+  .table-header{display:none}
+  .ship-row{grid-template-columns:1fr auto 28px;gap:8px}
+  .ship-row>*:not(:first-child):not(:last-child):not(:nth-child(6)){display:none}
+  .ship-row>:nth-child(6){display:flex;flex-direction:column;gap:3px}
+  .detail-grid{grid-template-columns:1fr}
+  .nav-center{display:none}
+  .navbar{grid-template-columns:1fr auto}
+}
+
+/* ── CHART ── */
+.hbar-row{display:flex;flex-direction:column;gap:4px}
+.hbar-label{display:flex;justify-content:space-between;font-size:0.73rem;font-family:var(--font-mono);color:var(--text)}
+.hbar-label span:last-child{color:var(--muted);font-size:0.68rem}
+.hbar-track{height:20px;background:var(--dim);border-radius:6px;overflow:hidden;position:relative}
+.hbar-fill-po{position:absolute;top:0;left:0;height:100%;border-radius:6px;transition:width 0.7s cubic-bezier(0.4,0,0.2,1);opacity:0.35}
+.hbar-fill-gr{position:absolute;top:0;left:0;height:100%;border-radius:6px;transition:width 0.9s cubic-bezier(0.4,0,0.2,1)}
+.hbar-pct{position:absolute;right:8px;top:50%;transform:translateY(-50%);font-size:0.65rem;font-family:var(--font-mono);font-weight:700;color:#fff;text-shadow:0 1px 3px rgba(0,0,0,0.5)}
+
+/* ══════════════════════════════════════
+   MODAL & FORM INPUT
+   ══════════════════════════════════════ */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.65);backdrop-filter:blur(4px);z-index:500;display:flex;align-items:center;justify-content:center;padding:16px;opacity:0;pointer-events:none;transition:opacity 0.2s}
+.modal-overlay.open{opacity:1;pointer-events:all}
+.modal-box{background:var(--bg2);border:1px solid var(--border2);border-radius:14px;width:100%;max-width:720px;max-height:90vh;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 24px 64px rgba(0,0,0,0.6);transform:translateY(12px);transition:transform 0.25s cubic-bezier(0.4,0,0.2,1)}
+.modal-overlay.open .modal-box{transform:translateY(0)}
+.modal-head{display:flex;align-items:center;gap:10px;padding:16px 20px;border-bottom:1px solid var(--border);flex-shrink:0}
+.modal-icon{width:34px;height:34px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
+.modal-title{font-family:var(--font-display);font-size:0.95rem;font-weight:700;color:var(--text)}
+.modal-sub{font-size:0.68rem;color:var(--muted);margin-top:2px;font-family:var(--font-mono)}
+.modal-close{margin-left:auto;width:30px;height:30px;border-radius:7px;border:1px solid var(--border);background:none;color:var(--muted);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.15s;flex-shrink:0}
+.modal-close:hover{border-color:var(--red-border);color:var(--red);background:var(--red-dim)}
+.modal-body{overflow-y:auto;padding:20px;flex:1}
+.modal-foot{padding:14px 20px;border-top:1px solid var(--border);display:flex;gap:8px;justify-content:flex-end;flex-shrink:0;background:var(--bg3)}
+
+/* Form elements */
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.form-grid.col3{grid-template-columns:1fr 1fr 1fr}
+.form-full{grid-column:1/-1}
+.form-group{display:flex;flex-direction:column;gap:5px}
+.form-label{font-size:0.68rem;color:var(--muted);font-family:var(--font-mono);text-transform:uppercase;letter-spacing:0.06em}
+.form-label span{color:var(--red);margin-left:2px}
+.form-input,.form-select,.form-textarea{background:var(--bg3);border:1px solid var(--border);border-radius:7px;padding:8px 11px;font-size:0.8rem;color:var(--text);font-family:var(--font-sans);outline:none;transition:border-color 0.2s,background 0.2s;width:100%}
+.form-input:focus,.form-select:focus,.form-textarea:focus{border-color:var(--teal-border);background:var(--bg4)}
+.form-input::placeholder,.form-textarea::placeholder{color:var(--muted)}
+.form-select{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='none' stroke='%237d8590' stroke-width='2' viewBox='0 0 24 24'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;padding-right:28px}
+.form-select option{background:var(--bg2)}
+.form-textarea{resize:vertical;min-height:70px;line-height:1.5}
+.form-divider{grid-column:1/-1;display:flex;align-items:center;gap:10px;margin:4px 0}
+.form-divider span{font-size:0.65rem;color:var(--muted);font-family:var(--font-mono);text-transform:uppercase;letter-spacing:0.08em;white-space:nowrap}
+.form-divider::before,.form-divider::after{content:'';flex:1;height:1px;background:var(--border)}
+
+/* Dynamic rows (bongkar harian) */
+.dyn-table{width:100%;border-collapse:collapse;margin-top:4px}
+.dyn-table th{font-size:0.63rem;color:var(--muted);font-family:var(--font-mono);text-transform:uppercase;letter-spacing:0.06em;padding:4px 8px;text-align:left;border-bottom:1px solid var(--border)}
+.dyn-table td{padding:5px 4px;vertical-align:middle}
+.dyn-table td input,.dyn-table td textarea{background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:6px 8px;font-size:0.77rem;color:var(--text);font-family:var(--font-sans);outline:none;width:100%;transition:border-color 0.15s}
+.dyn-table td input:focus,.dyn-table td textarea:focus{border-color:var(--teal-border)}
+.dyn-table td textarea{min-height:36px;resize:none;line-height:1.4}
+.row-num{font-size:0.68rem;color:var(--muted);font-family:var(--font-mono);text-align:center;width:28px}
+.btn-del-row{background:none;border:none;color:var(--muted);cursor:pointer;padding:4px;border-radius:5px;transition:color 0.15s}
+.btn-del-row:hover{color:var(--red)}
+.btn-add-row{display:flex;align-items:center;gap:6px;font-size:0.73rem;color:var(--teal);background:var(--teal-dim);border:1px dashed var(--teal-border);border-radius:7px;padding:6px 12px;cursor:pointer;margin-top:8px;transition:all 0.15s;font-family:var(--font-sans)}
+.btn-add-row:hover{background:rgba(57,210,192,0.2)}
+
+/* Submit buttons */
+.btn-submit{display:flex;align-items:center;gap:6px;padding:9px 20px;border-radius:8px;border:none;cursor:pointer;font-size:0.8rem;font-family:var(--font-sans);font-weight:600;transition:all 0.15s}
+.btn-submit-primary{background:var(--teal);color:#000}
+.btn-submit-primary:hover{filter:brightness(1.1)}
+.btn-submit-primary:disabled{opacity:0.5;cursor:not-allowed}
+.btn-cancel{padding:9px 16px;border-radius:8px;border:1px solid var(--border);background:none;color:var(--muted);cursor:pointer;font-size:0.8rem;font-family:var(--font-sans);transition:all 0.15s}
+.btn-cancel:hover{border-color:var(--border2);color:var(--text)}
+
+/* Toast notification */
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--bg2);border:1px solid var(--border2);border-radius:10px;padding:10px 18px;font-size:0.8rem;font-family:var(--font-sans);color:var(--text);box-shadow:0 8px 24px rgba(0,0,0,0.4);z-index:999;transition:transform 0.3s cubic-bezier(0.4,0,0.2,1),opacity 0.3s;opacity:0;display:flex;align-items:center;gap:8px;white-space:nowrap}
+.toast.show{transform:translateX(-50%) translateY(0);opacity:1}
+.toast.ok{border-color:var(--green-border);color:var(--green)}
+.toast.err{border-color:var(--red-border);color:var(--red)}
+.toast.loading{border-color:var(--amber-border);color:var(--amber)}
+
+/* Input tabs (modal switching) */
+.input-tabs{display:flex;gap:3px;background:var(--bg3);border-radius:8px;padding:3px;margin-bottom:18px;border:1px solid var(--border)}
+.input-tab{flex:1;padding:7px 10px;border-radius:6px;border:none;background:none;cursor:pointer;font-size:0.73rem;font-family:var(--font-sans);color:var(--muted);transition:all 0.15s;text-align:center;font-weight:500}
+.input-tab.on{background:var(--bg2);color:var(--text);border:1px solid var(--border);box-shadow:0 1px 3px rgba(0,0,0,0.2)}
+
+/* Nav input buttons */
+.nav-btn-input{background:var(--blue-dim);color:var(--blue);border:1px solid var(--blue-border)}
+.nav-btn-input:hover{background:rgba(88,166,255,0.2)}
+
+@media(max-width:640px){
+  .form-grid,.form-grid.col3{grid-template-columns:1fr}
+  .modal-box{max-height:95vh;border-radius:12px}
+}
+</style>
+</head>
+<body>
+
+<!-- NAVBAR FIXED -->
+<nav class="navbar">
+  <div class="nav-brand">
+    <div class="nav-logo">⚓</div>
+    <div>
+      <div class="nav-title">Penerimaan Kapal Lampung</div>
+      <div class="nav-sub">Sistem Informasi Kedatangan &amp; Bongkar Muatan</div>
+    </div>
+  </div>
+  <div class="nav-center">
+    <div class="nav-update">
+      <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+      Update: <strong id="lastUpdate">—</strong>
+      <span class="nav-update-sep">·</span>
+      <span id="dataSource" style="color:var(--muted)">Memuat...</span>
+    </div>
+  </div>
+  <div class="nav-actions">
+    <button class="nav-btn nav-btn-input" onclick="openModal('rencana')" title="Input Rencana Penerimaan">
+      <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="12" y1="14" x2="12" y2="18"/><line x1="10" y1="16" x2="14" y2="16"/></svg>
+      + Rencana
+    </button>
+    <button class="nav-btn nav-btn-input" onclick="openModal('master')" title="Input Kedatangan & Pembongkaran">
+      <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>
+      + Kedatangan
+    </button>
+    <button class="nav-btn nav-btn-input" onclick="openModal('bongkar')" title="Input Hasil Bongkar Harian">
+      <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><line x1="12" y1="14" x2="12" y2="22"/><line x1="10" y1="16" x2="14" y2="16"/></svg>
+      + Bongkar
+    </button>
+    <button class="nav-btn nav-btn-input" onclick="openModal('kantong')" title="Input Pengantongan / GR Inbag">
+      <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+      + Kantong/GR
+    </button>
+    <div class="nav-sep"></div>
+    <input type="file" id="uploadStoInput" accept=".xlsx,.xls" style="display:none" onchange="handleUploadSTOFile(event)">
+    <button class="nav-btn" id="uploadStoBtn" style="background:var(--amber-dim);color:var(--amber);border:1px solid var(--amber-border)" onclick="document.getElementById('uploadStoInput').click()" title="Upload/Replace data utama STO_KAPAL dari file Excel">
+      <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+      Upload Data
+    </button>
+    <button class="nav-btn nav-btn-refresh" id="refreshBtn" onclick="loadData()">
+      <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/></svg>
+      Refresh Data
+    </button>
+    <button class="theme-btn" id="themeBtn" onclick="toggleTheme()" title="Toggle tema">
+      <svg id="themeIcon" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+    </button>
+  </div>
+</nav>
+
+<div class="wrap">
+
+  <!-- STATS STRIP -->
+  <div class="stats-strip">
+    <div class="stat-card">
+      <div class="stat-label">
+        <svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="margin-right:4px;vertical-align:-1px"><path d="M3 17l4-8 4 4 4-6 4 10"/></svg>
+        Total Kapal
+      </div>
+      <div class="stat-value sv-teal" id="s-total">—</div>
+      <div class="stat-sub">🚢 dalam sistem</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">
+        <svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="margin-right:4px;vertical-align:-1px"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>
+        Sudah Sandar
+      </div>
+      <div class="stat-value sv-cyan" id="s-sandar">—</div>
+      <div class="stat-sub">⚓ di Lampung</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">
+        <svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="margin-right:4px;vertical-align:-1px"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+        Selesai Bongkar
+      </div>
+      <div class="stat-value sv-green" id="s-done">—</div>
+      <div class="stat-sub">✅ fully received</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">
+        <svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="margin-right:4px;vertical-align:-1px"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        Perlu Pantau
+      </div>
+      <div class="stat-value sv-amber" id="s-pending">—</div>
+      <div class="stat-sub">⚠️ belum / sebagian</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">
+        <svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="margin-right:4px;vertical-align:-1px"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
+        Total Muatan
+      </div>
+      <div class="stat-value sv-purple" style="font-size:1.5rem" id="s-ton">—</div>
+      <div class="stat-sub">📦 ton (semua kapal)</div>
+    </div>
+  </div>
+
+  <div class="status-bar">
+    <div class="status-dot dot-loading" id="statusDot"></div>
+    <span class="status-text" id="statusText">Menghubungkan ke sumber data...</span>
+  </div>
+
+  <div class="toolbar">
+    <div class="search-wrap">
+      <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+      <input class="search-input" id="searchInput" type="text" placeholder="Cari nama kapal, produk, ekspeditur...">
+    </div>
+    <div class="filter-group">
+      <button class="fbtn on" onclick="setFilter('all',this)">🗂 Semua</button>
+      <button class="fbtn" onclick="setFilter('sandar',this)">⚓ Sudah Sandar</button>
+      <button class="fbtn" onclick="setFilter('done',this)">✅ Selesai</button>
+      <button class="fbtn" onclick="setFilter('pending',this)">⚠️ Belum Tuntas</button>
+    </div>
+    <div class="export-wrap" id="exportWrap">
+      <button class="export-btn" onclick="toggleExportMenu(event)">
+        <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Unduh
+        <svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg>
+      </button>
+      <div class="export-menu" id="exportMenu">
+        <button class="export-item xl" onclick="exportExcel()">
+          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="m8 8 8 8M16 8l-8 8"/></svg>
+          Excel (.xlsx)
+        </button>
+        <button class="export-item pdf" onclick="exportPDF()">
+          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+          PDF
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="table-header">
+    <span>🚢 Kapal &amp; Rute</span>
+    <span>🏢 Ekspeditur</span>
+    <span>📅 ETA</span>
+    <span>📋 Qty PO (ton)</span>
+    <span>✅ GR (ton)</span>
+    <span>🔖 Status</span>
+    <span>📊 Realisasi</span>
+    <span></span>
+  </div>
+
+  <div class="ships" id="shipList">
+    <div class="skeleton"></div>
+    <div class="skeleton" style="opacity:.7"></div>
+    <div class="skeleton" style="opacity:.5"></div>
+  </div>
+  <div class="no-result" id="noResult">
+    <svg width="38" height="38" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+    Tidak ada kapal yang cocok.
+  </div>
+
+  <!-- ── CHART SECTION ── -->
+  <div id="chartSection" style="margin-top:28px;display:none">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
+      <div style="width:3px;height:20px;background:linear-gradient(180deg,var(--teal),var(--blue));border-radius:2px"></div>
+      <h2 style="font-family:var(--font-display);font-size:0.95rem;font-weight:700;letter-spacing:-0.01em">📊 Statistik Realisasi Bongkar</h2>
+      <div style="flex:1"></div>
+      <div id="chartTabs" style="display:flex;gap:4px">
+        <button class="fbtn on" id="tabBar" onclick="switchChart('bar')">📊 Per Kapal</button>
+        <button class="fbtn" id="tabDonut" onclick="switchChart('donut')">🍩 Status</button>
+        <button class="fbtn" id="tabTrend" onclick="switchChart('trend')">📈 Muatan</button>
+      </div>
+    </div>
+
+    <!-- Bar chart -->
+    <div id="chartBar" style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:20px 24px">
+      <div style="font-size:0.72rem;color:var(--muted);font-family:var(--font-mono);margin-bottom:16px">Perbandingan Qty PO vs GR per Kapal (ton) — klik batang untuk detail</div>
+      <div style="overflow-x:auto">
+        <canvas id="barCanvas" style="min-width:600px;height:280px;display:block"></canvas>
+      </div>
+      <div id="barTooltip" style="margin-top:14px;padding:10px 14px;background:var(--bg3);border:1px solid var(--border);border-radius:8px;font-size:0.75rem;font-family:var(--font-mono);display:none;min-height:40px"></div>
+    </div>
+
+    <!-- Donut chart -->
+    <div id="chartDonut" style="display:none;background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:20px 24px">
+      <div style="font-size:0.72rem;color:var(--muted);font-family:var(--font-mono);margin-bottom:16px">Distribusi Status Kapal — hover untuk detail</div>
+      <div style="display:flex;align-items:center;justify-content:center;gap:40px;flex-wrap:wrap">
+        <canvas id="donutCanvas" width="240" height="240" style="display:block"></canvas>
+        <div id="donutLegend" style="display:flex;flex-direction:column;gap:14px"></div>
+      </div>
+    </div>
+
+    <!-- Horizontal bar (muatan) -->
+    <div id="chartTrend" style="display:none;background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:20px 24px">
+      <div style="font-size:0.72rem;color:var(--muted);font-family:var(--font-mono);margin-bottom:16px">Ranking Muatan Terbesar (Qty PO) — top 10 kapal</div>
+      <div id="hbarChart" style="display:flex;flex-direction:column;gap:10px"></div>
+    </div>
+  </div>
+
+  <div class="footer">⚓ Dashboard Penerimaan Kapal — Lampung &nbsp;·&nbsp; 🔄 Data real-time dari Google Sheets</div>
+</div>
+
+<!-- ══════════════════════════════════════════════════
+     TOAST NOTIFICATION
+     ══════════════════════════════════════════════════ -->
+<div class="toast" id="toastEl"></div>
+
+<!-- ══════════════════════════════════════════════════
+     MODAL 1: RENCANA PENERIMAAN KAPAL
+     ══════════════════════════════════════════════════ -->
+<div class="modal-overlay" id="modal-rencana" onclick="overlayClose(event,'rencana')">
+  <div class="modal-box">
+    <div class="modal-head">
+      <div class="modal-icon" style="background:var(--blue-dim);border:1px solid var(--blue-border)">📋</div>
+      <div>
+        <div class="modal-title">Input Rencana Penerimaan Kapal</div>
+        <div class="modal-sub">Data planning kedatangan kapal wilayah Lampung</div>
+      </div>
+      <button class="modal-close" onclick="closeModal('rencana')">
+        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="form-group">
+          <label class="form-label">No. PO STO <span>*</span></label>
+          <input class="form-input" id="r-nopo" type="text" placeholder="cth: 5120379440">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Tanggal PO STO <span>*</span></label>
+          <input class="form-input" id="r-tglpo" type="date">
+        </div>
+        <div class="form-group form-full">
+          <label class="form-label">Nama Kapal <span>*</span></label>
+          <input class="form-input" id="r-kapal" type="text" placeholder="cth: KM Buana Gemilang I">
+        </div>
+        <div class="form-group form-full">
+          <label class="form-label">Produk <span>*</span></label>
+          <input class="form-input" id="r-produk" type="text" placeholder="cth: NPK 15-10-12 CHM CRH">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Jenis Muatan <span>*</span></label>
+          <select class="form-select" id="r-jenis">
+            <option value="">-- Pilih --</option>
+            <option value="Curah">Curah</option>
+            <option value="Inbag">Inbag</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Muatan (Ton) <span>*</span></label>
+          <input class="form-input" id="r-ton" type="number" step="0.001" min="0" placeholder="0.000">
+        </div>
+        <div class="form-divider form-full"><span>Lokasi</span></div>
+        <div class="form-group">
+          <label class="form-label">Pelabuhan Asal (Plant) <span>*</span></label>
+          <input class="form-input" id="r-asal" type="text" placeholder="cth: PEL GRESIK-TUKS PG">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Gudang Tujuan <span>*</span></label>
+          <input class="form-input" id="r-tujuan" type="text" placeholder="cth: PEL PANJANG - LAMPUNG">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Ekspeditur</label>
+          <input class="form-input" id="r-ekspeditur" type="text" placeholder="cth: KOPINDO CIPTA SEJAHTERA">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Tgl. GI (Plant Asal)</label>
+          <input class="form-input" id="r-tglgi" type="date">
+        </div>
+        <div class="form-group">
+          <label class="form-label">ETA (Estimasi Tiba) <span>*</span></label>
+          <input class="form-input" id="r-eta" type="date">
+        </div>
+        <div class="form-group form-full">
+          <label class="form-label">Keterangan</label>
+          <textarea class="form-textarea" id="r-ket" placeholder="Catatan tambahan..."></textarea>
+        </div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn-cancel" onclick="closeModal('rencana')">Batal</button>
+      <button class="btn-submit btn-submit-primary" onclick="submitRencana(this)">
+        <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+        Simpan Rencana
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════
+     MODAL 2: DATA KEDATANGAN & MASTER KAPAL
+     ══════════════════════════════════════════════════ -->
+<div class="modal-overlay" id="modal-master" onclick="overlayClose(event,'master')">
+  <div class="modal-box">
+    <div class="modal-head">
+      <div class="modal-icon" style="background:var(--teal-dim);border:1px solid var(--teal-border)">⚓</div>
+      <div>
+        <div class="modal-title">Input Kedatangan Kapal</div>
+        <div class="modal-sub">Data kedatangan, sandar, dan info pembongkaran</div>
+      </div>
+      <button class="modal-close" onclick="closeModal('master')">
+        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="form-group form-full">
+          <label class="form-label">Nama Kapal <span>*</span></label>
+          <input class="form-input" id="m-kapal" type="text" placeholder="cth: KM. STB 28">
+        </div>
+        <div class="form-group">
+          <label class="form-label">No. PO STO</label>
+          <input class="form-input" id="m-nopo" type="text" placeholder="cth: 5320071453">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Jenis Muatan <span>*</span></label>
+          <select class="form-select" id="m-jenis">
+            <option value="">-- Pilih --</option>
+            <option value="Curah">Curah</option>
+            <option value="Inbag">Inbag</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Produk <span>*</span></label>
+          <input class="form-input" id="m-produk" type="text" placeholder="cth: NPK 14-12-16-4Mgo BLD">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Tonase PO (Ton) <span>*</span></label>
+          <input class="form-input" id="m-ton" type="number" step="0.001" min="0" placeholder="0.000">
+        </div>
+        <div class="form-divider form-full"><span>Lokasi</span></div>
+        <div class="form-group">
+          <label class="form-label">Pelabuhan Asal <span>*</span></label>
+          <input class="form-input" id="m-asal" type="text" placeholder="cth: Lini I Sar Bontang">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Pelabuhan Tujuan <span>*</span></label>
+          <input class="form-input" id="m-tujuan" type="text" placeholder="cth: Panjang, Lampung">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Diangkut ke (Gudang)</label>
+          <input class="form-input" id="m-gudang" type="text" placeholder="cth: Gudang Lini II PADIMAS 1">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Ekspeditur</label>
+          <input class="form-input" id="m-ekspeditur" type="text" placeholder="Nama ekspeditur">
+        </div>
+        <div class="form-divider form-full"><span>Waktu Kedatangan</span></div>
+        <div class="form-group">
+          <label class="form-label">Tgl. Berlabuh <span>*</span></label>
+          <input class="form-input" id="m-berlabuh" type="date">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Tgl. Sandar <span>*</span></label>
+          <input class="form-input" id="m-sandar" type="date">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Jam Sandar</label>
+          <input class="form-input" id="m-jamsandar" type="time">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Tgl. Mulai Bongkar</label>
+          <input class="form-input" id="m-mulai" type="date">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Tgl. Selesai Bongkar</label>
+          <input class="form-input" id="m-selesai" type="date">
+        </div>
+        <div class="form-group form-full">
+          <label class="form-label">Keterangan</label>
+          <textarea class="form-textarea" id="m-ket" placeholder="Catatan kedatangan kapal..."></textarea>
+        </div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn-cancel" onclick="closeModal('master')">Batal</button>
+      <button class="btn-submit btn-submit-primary" onclick="submitKedatangan(this)">
+        <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+        Simpan Kedatangan
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════
+     MODAL 3: HASIL BONGKAR HARIAN
+     ══════════════════════════════════════════════════ -->
+<div class="modal-overlay" id="modal-bongkar" onclick="overlayClose(event,'bongkar')">
+  <div class="modal-box" style="max-width:820px">
+    <div class="modal-head">
+      <div class="modal-icon" style="background:var(--amber-dim);border:1px solid var(--amber-border)">📦</div>
+      <div>
+        <div class="modal-title">Input Hasil Bongkar Harian</div>
+        <div class="modal-sub">Realisasi pembongkaran per tanggal + kronologi opsional</div>
+      </div>
+      <button class="modal-close" onclick="closeModal('bongkar')">
+        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="form-group form-full">
+          <label class="form-label">Nama Kapal <span>*</span></label>
+          <input class="form-input" id="b-kapal" type="text" placeholder="cth: KM Shoryuu 88">
+        </div>
+        <div class="form-group">
+          <label class="form-label">No. PO STO</label>
+          <input class="form-input" id="b-nopo" type="text" placeholder="cth: 5120378946">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Nama Produk <span>*</span></label>
+          <input class="form-input" id="b-produk" type="text" placeholder="cth: NPK 15-10-12 CHM CRH">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Total Tonase PO (Ton)</label>
+          <input class="form-input" id="b-tonpo" type="number" step="0.001" placeholder="0.000">
+        </div>
+      </div>
+
+      <div class="form-divider" style="margin:16px 0 10px"><span>Hasil Bongkar Per Tanggal</span></div>
+      <div style="overflow-x:auto">
+      <table class="dyn-table" id="bongkarTable">
+        <thead>
+          <tr>
+            <th style="width:24px">No</th>
+            <th>Tanggal <span style="color:var(--red)">*</span></th>
+            <th>Hasil Bongkar (Ton) <span style="color:var(--red)">*</span></th>
+            <th style="background:var(--red-dim)">Blocked Stock (Ton)</th>
+            <th style="background:var(--red-dim)">Jenis Blocked</th>
+            <th style="background:var(--green-dim)">Selisih Lebih (Ton)</th>
+            <th>Keterangan Singkat</th>
+            <th>Kronologi Kegiatan <span style="color:var(--muted);font-weight:400">(opsional)</span></th>
+            <th style="width:32px"></th>
+          </tr>
+        </thead>
+        <tbody id="bongkarRows"></tbody>
+      </table>
+      </div>
+      <div style="display:flex;align-items:center;gap:14px;margin-top:6px;font-size:0.68rem;color:var(--muted);font-family:var(--font-mono)">
+        <span>🔴 Blocked Stock = SUSUT / SWEEPING / BASAH (mengurangi stok bersih, tidak dijumlah ke total bongkar)</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:14px;font-size:0.68rem;color:var(--muted);font-family:var(--font-mono)">
+        <span>🟢 Selisih Lebih = kelebihan qty saat GR (ditambahkan ke total realisasi)</span>
+      </div>
+      <button class="btn-add-row" onclick="addBongkarRow()">
+        <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Tambah Baris
+      </button>
+    </div>
+    <div class="modal-foot">
+      <button class="btn-cancel" onclick="closeModal('bongkar')">Batal</button>
+      <button class="btn-submit btn-submit-primary" onclick="submitBongkar(this)">
+        <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+        Simpan Data Bongkar
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════
+     MODAL 4: PENGANTONGAN (CURAH) / GR INBAG
+     ══════════════════════════════════════════════════ -->
+<div class="modal-overlay" id="modal-kantong" onclick="overlayClose(event,'kantong')">
+  <div class="modal-box" style="max-width:820px">
+    <div class="modal-head">
+      <div class="modal-icon" style="background:var(--green-dim);border:1px solid var(--green-border)">🏭</div>
+      <div>
+        <div class="modal-title">Input Pengantongan / GR Inbag</div>
+        <div class="modal-sub">Pilih jenis: Pengantongan (Curah) atau Penerimaan GR (Inbag)</div>
+      </div>
+      <button class="modal-close" onclick="closeModal('kantong')">
+        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <!-- Tab switcher -->
+      <div class="input-tabs">
+        <button class="input-tab on" id="tab-curah" onclick="switchKantongTab('curah')">🌾 Pengantongan Curah</button>
+        <button class="input-tab" id="tab-inbag" onclick="switchKantongTab('inbag')">📦 Penerimaan GR Inbag</button>
+      </div>
+
+      <!-- CURAH TAB -->
+      <div id="pane-curah">
+        <div class="form-grid">
+          <div class="form-group form-full">
+            <label class="form-label">Nama Kapal <span>*</span></label>
+            <input class="form-input" id="c-kapal" type="text" placeholder="cth: KM Buana Gemilang I">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Produk Curah <span>*</span></label>
+            <input class="form-input" id="c-produk" type="text" placeholder="cth: NPK 15-10-12 CHM CRH">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Gudang / Lokasi</label>
+            <input class="form-input" id="c-gudang" type="text" placeholder="cth: DC Lampung II">
+          </div>
+        </div>
+
+        <div class="form-divider" style="margin:16px 0 10px"><span>Progress Pengantongan Per Tanggal</span></div>
+        <table class="dyn-table" id="curahTable">
+          <thead>
+            <tr>
+              <th style="width:28px">No</th>
+              <th>Tanggal <span style="color:var(--red)">*</span></th>
+              <th>Stok Curah Awal (Ton)</th>
+              <th>Penerimaan Ex.Kapal (Ton)</th>
+              <th>Pengantongan (Ton) <span style="color:var(--red)">*</span></th>
+              <th>Keterangan</th>
+              <th style="width:32px"></th>
+            </tr>
+          </thead>
+          <tbody id="curahRows"></tbody>
+        </table>
+        <button class="btn-add-row" onclick="addCurahRow()">
+          <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Tambah Baris
+        </button>
+      </div>
+
+      <!-- INBAG TAB -->
+      <div id="pane-inbag" style="display:none">
+        <div class="form-grid">
+          <div class="form-group form-full">
+            <label class="form-label">Nama Kapal <span>*</span></label>
+            <input class="form-input" id="i-kapal" type="text" placeholder="cth: KM. STB 28">
+          </div>
+          <div class="form-group">
+            <label class="form-label">No. PO STO</label>
+            <input class="form-input" id="i-nopo" type="text" placeholder="cth: 5320071453">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Nama Produk <span>*</span></label>
+            <input class="form-input" id="i-produk" type="text" placeholder="cth: NPK @50KG D291">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Tanggal GR <span>*</span></label>
+            <input class="form-input" id="i-tglgr" type="date">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Qty GR (Ton) <span>*</span></label>
+            <input class="form-input" id="i-qty" type="number" step="0.001" min="0" placeholder="0.000">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Qty GR (Kantong / Ea)</label>
+            <input class="form-input" id="i-ea" type="number" step="1" min="0" placeholder="0">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Gudang Tujuan</label>
+            <input class="form-input" id="i-gudang" type="text" placeholder="cth: Gudang Lini II PADIMAS 1">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Susut (Ton)</label>
+            <input class="form-input" id="i-susut" type="number" step="0.001" min="0" placeholder="0.000">
+          </div>
+          <div class="form-group form-full">
+            <label class="form-label">Keterangan</label>
+            <textarea class="form-textarea" id="i-ket" placeholder="Catatan penerimaan inbag..."></textarea>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn-cancel" onclick="closeModal('kantong')">Batal</button>
+      <button class="btn-submit btn-submit-primary" id="kantongSubmitBtn" onclick="submitKantong(this)">
+        <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+        Simpan Pengantongan
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ══════════════════════════════════════════════════════
+   APPS SCRIPT URL — ganti dengan URL deploy Anda
+   ══════════════════════════════════════════════════════ */
+const WRITE_URL = 'https://script.google.com/macros/s/AKfycbwGH10Oyx4e7zijXqUc7Qp4yZL_b_ae93HD_rg87DH-axph1bHsJ0TpVgxTJNK60ZE_/exec';
+// URL yang sama dipakai untuk READ (doGet) dan WRITE (doPost)
+const API_URL = WRITE_URL;
+
+/* ── TOAST ── */
+function showToast(msg, type='ok', dur=3500){
+  const t = document.getElementById('toastEl');
+  const icons = {ok:'✅', err:'❌', loading:'⏳'};
+  t.innerHTML = `<span>${icons[type]||'ℹ️'}</span> ${msg}`;
+  t.className = `toast ${type} show`;
+  if(type !== 'loading') setTimeout(()=>{ t.classList.remove('show'); }, dur);
+}
+
+/* ── MODAL CONTROL ── */
+function openModal(id){
+  const el = document.getElementById('modal-'+id);
+  if(!el) return;
+  el.classList.add('open');
+  document.body.style.overflow = 'hidden';
+  // Init baris default jika kosong
+  if(id==='bongkar' && document.getElementById('bongkarRows').children.length===0) addBongkarRow();
+  if(id==='kantong' && document.getElementById('curahRows').children.length===0) addCurahRow();
+}
+function closeModal(id){
+  document.getElementById('modal-'+id)?.classList.remove('open');
+  document.body.style.overflow = '';
+}
+function overlayClose(e, id){
+  if(e.target === document.getElementById('modal-'+id)) closeModal(id);
+}
+document.addEventListener('keydown', e=>{ if(e.key==='Escape') document.querySelectorAll('.modal-overlay.open').forEach(m=>{ m.classList.remove('open'); document.body.style.overflow=''; }); });
+
+/* ── KANTONG TAB SWITCH ── */
+let activeKantongTab = 'curah';
+function switchKantongTab(tab){
+  activeKantongTab = tab;
+  document.getElementById('pane-curah').style.display = tab==='curah' ? '' : 'none';
+  document.getElementById('pane-inbag').style.display = tab==='inbag' ? '' : 'none';
+  document.getElementById('tab-curah').classList.toggle('on', tab==='curah');
+  document.getElementById('tab-inbag').classList.toggle('on', tab==='inbag');
+  document.getElementById('kantongSubmitBtn').innerHTML = tab==='curah'
+    ? '<svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg> Simpan Pengantongan'
+    : '<svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg> Simpan GR Inbag';
+}
+
+/* ── DYNAMIC ROWS: BONGKAR ── */
+let bongkarRowCount = 0;
+function addBongkarRow(){
+  bongkarRowCount++;
+  const n = bongkarRowCount;
+  const tr = document.createElement('tr');
+  tr.id = 'brow-'+n;
+  tr.innerHTML = `
+    <td class="row-num">${document.getElementById('bongkarRows').children.length+1}</td>
+    <td><input type="date" placeholder="tanggal" style="width:128px"></td>
+    <td><input type="number" step="0.001" min="0" placeholder="0.000" style="width:100px"></td>
+    <td><input type="number" step="0.001" min="0" placeholder="0.000" style="width:95px;border-color:var(--red-border)" class="blocked-qty"></td>
+    <td><select style="width:110px;background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:6px 6px;font-size:0.75rem;color:var(--text)" class="blocked-jenis">
+      <option value="">-- pilih --</option>
+      <option value="SUSUT">SUSUT</option>
+      <option value="SWEEPING">SWEEPING</option>
+      <option value="BASAH">BASAH</option>
+      <option value="LAINNYA">LAINNYA</option>
+    </select></td>
+    <td><input type="number" step="0.001" min="0" placeholder="0.000" style="width:95px;border-color:var(--green-border)" class="selisih-qty"></td>
+    <td><input type="text" placeholder="cth: 2 unit jibcrane"></td>
+    <td><textarea placeholder="08:00 buka palka...${String.fromCharCode(10)}16:00 nonstop..." style="min-height:52px;font-size:0.72rem"></textarea></td>
+    <td><button class="btn-del-row" onclick="delRow('bongkarRows','brow-${n}')">
+      <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button></td>`;
+  document.getElementById('bongkarRows').appendChild(tr);
+  renumberRows('bongkarRows');
+}
+
+/* ── DYNAMIC ROWS: CURAH ── */
+let curahRowCount = 0;
+function addCurahRow(){
+  curahRowCount++;
+  const n = curahRowCount;
+  const tr = document.createElement('tr');
+  tr.id = 'crow-'+n;
+  tr.innerHTML = `
+    <td class="row-num">${document.getElementById('curahRows').children.length+1}</td>
+    <td><input type="date"></td>
+    <td><input type="number" step="0.001" min="0" placeholder="0.000" style="width:100px"></td>
+    <td><input type="number" step="0.001" min="0" placeholder="0.000" style="width:100px"></td>
+    <td><input type="number" step="0.001" min="0" placeholder="0.000" style="width:100px"></td>
+    <td><input type="text" placeholder="catatan..."></td>
+    <td><button class="btn-del-row" onclick="delRow('curahRows','crow-${n}')">
+      <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button></td>`;
+  document.getElementById('curahRows').appendChild(tr);
+  renumberRows('curahRows');
+}
+
+function delRow(tbodyId, rowId){
+  const tbody = document.getElementById(tbodyId);
+  const row = document.getElementById(rowId);
+  if(row && tbody.children.length > 1) { row.remove(); renumberRows(tbodyId); }
+  else showToast('Minimal 1 baris harus ada','err',2000);
+}
+function renumberRows(tbodyId){
+  document.querySelectorAll(`#${tbodyId} tr .row-num`).forEach((cell,i)=>{ cell.textContent=i+1; });
+}
+
+/* ── VALIDASI ── */
+function req(id, label){
+  const el = document.getElementById(id);
+  const v = el?.value?.trim();
+  if(!v){ el?.classList.add('border-red'); el?.focus(); showToast(`${label} wajib diisi!`,'err',2500); return false; }
+  el?.classList.remove('border-red');
+  return true;
+}
+function gv(id){ return document.getElementById(id)?.value?.trim()||''; }
+
+/* ── POST KE APPS SCRIPT ── */
+async function postToSheet(payload, btn, successMsg){
+  btn.disabled = true;
+  btn.innerHTML = '<svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" style="animation:spin 1s linear infinite"><path d="M21 12a9 9 0 1 1-6.22-8.56"/></svg> Menyimpan...';
+  showToast('Mengirim data ke Google Sheets...','loading');
+  try {
+    const res = await fetch(WRITE_URL, {
+      method:'POST',
+      mode:'no-cors',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify(payload)
+    });
+    // no-cors: kita tidak bisa baca response, anggap sukses
+    showToast(successMsg, 'ok');
+    return true;
+  } catch(e) {
+    showToast('Gagal mengirim: '+e.message, 'err');
+    return false;
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+/* ── SUBMIT: RENCANA ── */
+async function submitRencana(btn){
+  if(!req('r-nopo','No. PO STO')) return;
+  if(!req('r-kapal','Nama Kapal')) return;
+  if(!req('r-produk','Produk')) return;
+  if(!req('r-jenis','Jenis Muatan')) return;
+  if(!req('r-ton','Muatan (Ton)')) return;
+  if(!req('r-asal','Pelabuhan Asal')) return;
+  if(!req('r-tujuan','Gudang Tujuan')) return;
+  if(!req('r-eta','ETA')) return;
+
+  const payload = {
+    sheet: 'Rencana',
+    data: {
+      nopo: gv('r-nopo'), tglpo: gv('r-tglpo'), kapal: gv('r-kapal'),
+      produk: gv('r-produk'), jenis: gv('r-jenis'), ton: gv('r-ton'),
+      asal: gv('r-asal'), tujuan: gv('r-tujuan'), ekspeditur: gv('r-ekspeditur'),
+      tglgi: gv('r-tglgi'), eta: gv('r-eta'), keterangan: gv('r-ket'),
+      timestamp: new Date().toISOString()
+    }
+  };
+  const ok = await postToSheet(payload, btn, '✅ Rencana kapal berhasil disimpan!');
+  if(ok){
+    btn.innerHTML = '<svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg> Simpan Rencana';
+    setTimeout(()=>closeModal('rencana'), 1200);
+    // reset form
+    ['r-nopo','r-tglpo','r-kapal','r-produk','r-ton','r-asal','r-tujuan','r-ekspeditur','r-tglgi','r-eta','r-ket'].forEach(id=>{ const el=document.getElementById(id); if(el) el.value=''; });
+    document.getElementById('r-jenis').value='';
+  }
+}
+
+/* ── SUBMIT: KEDATANGAN ── */
+async function submitKedatangan(btn){
+  if(!req('m-kapal','Nama Kapal')) return;
+  if(!req('m-jenis','Jenis Muatan')) return;
+  if(!req('m-produk','Produk')) return;
+  if(!req('m-ton','Tonase PO')) return;
+  if(!req('m-asal','Pelabuhan Asal')) return;
+  if(!req('m-tujuan','Pelabuhan Tujuan')) return;
+  if(!req('m-berlabuh','Tgl. Berlabuh')) return;
+  if(!req('m-sandar','Tgl. Sandar')) return;
+
+  const payload = {
+    sheet: 'Kedatangan',
+    data: {
+      kapal: gv('m-kapal'), nopo: gv('m-nopo'), jenis: gv('m-jenis'),
+      produk: gv('m-produk'), ton: gv('m-ton'),
+      asal: gv('m-asal'), tujuan: gv('m-tujuan'), gudang: gv('m-gudang'),
+      ekspeditur: gv('m-ekspeditur'),
+      berlabuh: gv('m-berlabuh'), sandar: gv('m-sandar'),
+      jam_sandar: gv('m-jamsandar'), mulai_bongkar: gv('m-mulai'),
+      selesai_bongkar: gv('m-selesai'), keterangan: gv('m-ket'),
+      timestamp: new Date().toISOString()
+    }
+  };
+  const ok = await postToSheet(payload, btn, '✅ Data kedatangan kapal berhasil disimpan!');
+  if(ok){
+    btn.innerHTML = '<svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg> Simpan Kedatangan';
+    setTimeout(()=>{ closeModal('master'); loadData(); }, 1500);
+    ['m-kapal','m-nopo','m-produk','m-ton','m-asal','m-tujuan','m-gudang','m-ekspeditur','m-berlabuh','m-sandar','m-jamsandar','m-mulai','m-selesai','m-ket'].forEach(id=>{ const el=document.getElementById(id); if(el) el.value=''; });
+    document.getElementById('m-jenis').value='';
+  }
+}
+
+/* ── SUBMIT: BONGKAR HARIAN ── */
+async function submitBongkar(btn){
+  if(!req('b-kapal','Nama Kapal')) return;
+  if(!req('b-produk','Nama Produk')) return;
+
+  // Kumpulkan baris (pakai querySelector spesifik per kolom, bukan index posisi)
+  const rows = [];
+  let valid = true;
+  document.querySelectorAll('#bongkarRows tr').forEach((tr,i)=>{
+    const cells = tr.querySelectorAll('td');
+    const tgl       = cells[1]?.querySelector('input')?.value?.trim();
+    const qty       = cells[2]?.querySelector('input')?.value?.trim();
+    const blockedQty   = cells[3]?.querySelector('.blocked-qty')?.value?.trim() || '';
+    const blockedJenis = cells[4]?.querySelector('.blocked-jenis')?.value?.trim() || '';
+    const selisihQty   = cells[5]?.querySelector('.selisih-qty')?.value?.trim() || '';
+    const ket       = cells[6]?.querySelector('input')?.value?.trim() || '';
+    const kronologi = cells[7]?.querySelector('textarea')?.value?.trim() || '';
+
+    if(!tgl||!qty){ showToast(`Baris ${i+1}: tanggal & qty wajib diisi!`,'err'); valid=false; return; }
+    if(blockedQty && !blockedJenis){ showToast(`Baris ${i+1}: pilih jenis blocked stock!`,'err'); valid=false; return; }
+
+    rows.push({
+      tanggal: tgl,
+      hasil: qty,
+      blockedQty: blockedQty || 0,
+      blockedJenis: blockedJenis,
+      selisihLebih: selisihQty || 0,
+      ket, kronologi
+    });
+  });
+  if(!valid) return;
+  if(!rows.length){ showToast('Minimal 1 baris bongkar harian!','err'); return; }
+
+  const payload = {
+    sheet: 'Bongkar_Harian',
+    data: {
+      kapal: gv('b-kapal'), nopo: gv('b-nopo'), produk: gv('b-produk'),
+      tonase_po: gv('b-tonpo'),
+      rows, timestamp: new Date().toISOString()
+    }
+  };
+  const ok = await postToSheet(payload, btn, '✅ Data bongkar harian berhasil disimpan!');
+  if(ok){
+    btn.innerHTML = '<svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg> Simpan Data Bongkar';
+    setTimeout(()=>{ closeModal('bongkar'); loadData(); }, 1500);
+    ['b-kapal','b-nopo','b-produk','b-tonpo'].forEach(id=>{ const el=document.getElementById(id); if(el) el.value=''; });
+    document.getElementById('bongkarRows').innerHTML='';
+    bongkarRowCount=0; addBongkarRow();
+  }
+}
+
+/* ── SUBMIT: KANTONG / GR INBAG ── */
+async function submitKantong(btn){
+  if(activeKantongTab === 'curah'){
+    if(!req('c-kapal','Nama Kapal')) return;
+    if(!req('c-produk','Produk Curah')) return;
+    const rows = [];
+    let valid = true;
+    document.querySelectorAll('#curahRows tr').forEach((tr,i)=>{
+      const inputs = tr.querySelectorAll('input');
+      const tgl = inputs[0]?.value?.trim();
+      const kantong = inputs[3]?.value?.trim();
+      if(!tgl||!kantong){ showToast(`Baris ${i+1}: tanggal & pengantongan wajib diisi!`,'err'); valid=false; return; }
+      rows.push({ tanggal:tgl, stok_awal:inputs[1]?.value||0, penerimaan:inputs[2]?.value||0, pengantongan:kantong, keterangan:inputs[4]?.value?.trim()||'' });
+    });
+    if(!valid) return;
+
+    const payload = {
+      sheet: 'Pengantongan',
+      data: { kapal: gv('c-kapal'), produk: gv('c-produk'), gudang: gv('c-gudang'), rows, timestamp: new Date().toISOString() }
+    };
+    const ok = await postToSheet(payload, btn, '✅ Data pengantongan berhasil disimpan!');
+    if(ok){
+      btn.innerHTML = '<svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg> Simpan Pengantongan';
+      setTimeout(()=>closeModal('kantong'), 1200);
+      ['c-kapal','c-produk','c-gudang'].forEach(id=>{ const el=document.getElementById(id); if(el) el.value=''; });
+      document.getElementById('curahRows').innerHTML=''; curahRowCount=0; addCurahRow();
+    }
+  } else {
+    if(!req('i-kapal','Nama Kapal')) return;
+    if(!req('i-produk','Nama Produk')) return;
+    if(!req('i-tglgr','Tanggal GR')) return;
+    if(!req('i-qty','Qty GR')) return;
+
+    const payload = {
+      sheet: 'Inbag_GR',
+      data: {
+        kapal: gv('i-kapal'), nopo: gv('i-nopo'), produk: gv('i-produk'),
+        tglgr: gv('i-tglgr'), qty: gv('i-qty'), ea: gv('i-ea'),
+        gudang: gv('i-gudang'), susut: gv('i-susut'), keterangan: gv('i-ket'),
+        timestamp: new Date().toISOString()
+      }
+    };
+    const ok = await postToSheet(payload, btn, '✅ GR Inbag berhasil disimpan!');
+    if(ok){
+      btn.innerHTML = '<svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg> Simpan GR Inbag';
+      setTimeout(()=>{ closeModal('kantong'); loadData(); }, 1500);
+      ['i-kapal','i-nopo','i-produk','i-tglgr','i-qty','i-ea','i-gudang','i-susut','i-ket'].forEach(id=>{ const el=document.getElementById(id); if(el) el.value=''; });
+    }
+  }
+}
+
+let DATA = [];
+let activeFilter = 'all';
+let openCards = {};
+
+/* ── THEME ── */
+function toggleTheme(){
+  const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+  const next = isDark ? 'light' : 'dark';
+  document.documentElement.setAttribute('data-theme', next);
+  localStorage.setItem('theme', next);
+  updateThemeIcon(next);
+}
+function updateThemeIcon(theme){
+  const icon = document.getElementById('themeIcon');
+  if(!icon) return;
+  icon.innerHTML = theme === 'light'
+    ? '<circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>'
+    : '<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>';
+}
+(function initTheme(){
+  const saved = localStorage.getItem('theme') || 'dark';
+  document.documentElement.setAttribute('data-theme', saved);
+  updateThemeIcon(saved);
+})();
+
+/* ── UTILS ── */
+function pct(gr, qty){ return qty>0 ? Math.min(100, Math.round(gr/qty*100)) : 0; }
+function fmtN(n){ const num = parseFloat(n)||0; return num.toLocaleString('id-ID',{minimumFractionDigits:0,maximumFractionDigits:3}); }
+function fillColor(p){ return p>=100?'var(--green)':p>=50?'var(--amber)':'var(--red)'; }
+
+/* ── NORMALIZE API DATA ──
+   Coba berbagai kemungkinan struktur JSON dari Google Apps Script:
+   1. Array of objects langsung
+   2. {data: [...]}
+   3. {ships: [...]}
+   4. Array of arrays (spreadsheet rows)
+*/
+function normalizeData(raw){
+  let rows = [];
+  if(Array.isArray(raw)) rows = raw;
+  else if(raw && Array.isArray(raw.data)) rows = raw.data;
+  else if(raw && Array.isArray(raw.ships)) rows = raw.ships;
+  else if(raw && Array.isArray(raw.kapal)) rows = raw.kapal;
+  else { return null; } // format tidak dikenali
+
+  if(rows.length === 0) return [];
+
+  // Deteksi apakah array of arrays (spreadsheet rows) atau array of objects
+  if(Array.isArray(rows[0])){
+    // Format spreadsheet: baris pertama = header
+    const headers = rows[0].map(h => String(h).toLowerCase().trim());
+    return rows.slice(1).map(row => {
+      const obj = {};
+      headers.forEach((h,i) => obj[h] = row[i]);
+      return mapShipObject(obj, headers);
+    }).filter(s => s.name);
+  } else {
+    return rows.map(obj => mapShipObject(obj, Object.keys(obj).map(k=>k.toLowerCase()))).filter(s=>s.name);
+  }
+}
+
+/* Petakan field object ke struktur internal, toleran terhadap variasi nama kolom */
+function mapShipObject(obj, _keys){
+  const get = (...candidates) => {
+    for(const c of candidates){
+      const key = Object.keys(obj).find(k=>k.toLowerCase().replace(/[\s_]/g,'')===c.replace(/[\s_]/g,''));
+      if(key !== undefined && obj[key] !== undefined && obj[key] !== '') return obj[key];
+    }
+    return '';
+  };
+
+  const name = get('namakapal','nama_kapal','ship','kapal','name','vessel','idkapal','id_kapal');
+  const qty  = parseFloat(get('qtypo','qty_po','totalmuatan','total_muatan','qty','muatan','quantitypo')) || 0;
+  const gr   = parseFloat(get('qtygr','qty_gr','totalbongkaran','total_bongkaran','gr','realisasi','bongkaran','kuantumgr')) || 0;
+  const sisa = qty - gr;
+
+  // status otomatis jika tidak ada
+  let status = String(get('status','statusposto','status_po')||'').toLowerCase();
+  if(!status || status===''){
+    if(gr<=0) status='wait';
+    else if(gr>=qty) status='done';
+    else status='partial';
+  } else {
+    if(status.includes('selesai')||status.includes('done')||status.includes('close')||status.includes('gr')) status='done';
+    else if(status.includes('partial')||status.includes('sebagian')||status.includes('proses')) status='partial';
+    else status='wait';
+  }
+
+  const sandar = (() => {
+    const v = String(get('sandar','sudahsandar','sudah_sandar','berlabuh')||'').toLowerCase();
+    if(v==='ya'||v==='yes'||v==='true'||v==='1') return true;
+    if(v==='tidak'||v==='no'||v==='false'||v==='0') return false;
+    // estimasi dari status & GR
+    return gr > 0 || status==='done';
+  })();
+
+  const produkRaw = get('produk','jenisMuatan','jenismuatan','jenis_muatan','product','namaproduk');
+  const doQty = parseFloat(get('qtydo','qty_do','do','kuantumdo')) || qty;
+
+  // Jika API sudah mengirim array products yang valid, gunakan langsung
+  // dengan normalisasi field (API pakai 'nama', 'do', 'gr', 'muatan')
+  let products;
+  const rawProds = obj.products;
+  if(Array.isArray(rawProds) && rawProds.length > 0){
+    products = rawProds.map(p => ({
+      nama:   p.nama   || p.name    || p.produk  || p.product || 'Muatan',
+      do:     parseFloat(p.do      || p.qty_do   || p.kuantumdo || p.do_qty || 0) || 0,
+      gr:     parseFloat(p.gr      || p.qty_gr   || p.kuantumgr || p.gr_qty || 0) || 0,
+      muatan: p.muatan || p.type    || p.jenis    || '',
+    }));
+  } else {
+    products = [{
+      nama:   produkRaw || get('kodeproduk','kode_produk') || 'Muatan',
+      do:     doQty,
+      gr,
+      muatan: get('jenismuatan','jenis_muatan','muatan','type') || '',
+    }];
+  }
+
+  const tujuanVal = get('tujuan','gudangtujuan','gudang_tujuan','planttujuan','plant_tujuan','destination','ke');
+  const apiId = get('id');
+  const uniqueId = apiId
+    ? String(apiId)
+    : (name + '_' + tujuanVal).replace(/[^a-z0-9]/gi,'_').replace(/_+/g,'_').toLowerCase();
+
+  return {
+    id: uniqueId,
+    name,
+    asal:       get('asal','plantasal','plant_asal','dari','origin','asalkapal'),
+    tujuan:     tujuanVal,
+    ekspeditur: get('ekspeditur','shipper','pengirim','ekspedisi'),
+    eta:        get('eta','etaarrival','deliverydate','delivery_date','tanggaltiba','tgl_tiba','tgleta'),
+    tglGR:      get('tglgr','tgl_gr','tglegr','tanggalgr','tanggal_gr','grdate','gr_date'),
+    tglGI:      get('tglgi','tgl_gi','tglegi','tanggalgi','tanggal_gi','gidate','gi_date'),
+    tglPO:      get('tglpo','tgl_po','tglposto','tgl_po_sto','tanggalpo','tanggal_po'),
+    keterangan: get('keterangan','catatan','note','notes','remark'),
+    muatan:     get('jenismuatan','jenis_muatan','muatan','tipmuatan','type'),
+    voyage:     parseInt(get('voyage','voyageke','jumlahvoyage'))||1,
+    nopo:       get('nopo','no_po','noposto','no_po_sto'),
+    status, sandar, qty, gr,
+    sisa: Math.max(0, sisa),
+    products,
+  };
+}
+
+/* ── AMBIL 1 SHEET DARI APPS SCRIPT (array-of-arrays: header + rows) ── */
+async function fetchSheetRows(sheetName){
+  const url = API_URL + (API_URL.includes('?') ? '&' : '?') + 'sheet=' + encodeURIComponent(sheetName);
+  const res = await fetch(url, {mode:'cors'});
+  if(!res.ok) throw new Error('HTTP '+res.status+' ('+sheetName+')');
+  const raw = await res.json();
+  if(raw && raw.status === 'error') throw new Error(raw.message || 'Error sheet '+sheetName);
+  return (raw && Array.isArray(raw.data)) ? raw.data : [];
+}
+
+/* Rapikan nilai tanggal yang datang dari Apps Script (bisa berupa Date ISO string, atau string biasa) */
+function fmtDateVal(v){
+  if(v === null || v === undefined || v === '') return '';
+  const s = String(v);
+  // Format ISO dari Date object yang di-JSON-kan: 2026-05-06T00:00:00.000Z
+  if(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/.test(s)){
+    const d = new Date(s);
+    if(!isNaN(d)) return d.toLocaleDateString('id-ID',{day:'2-digit',month:'short',year:'numeric'});
+  }
+  return s;
+}
+function toNum(v){ const n = parseFloat(v); return isNaN(n) ? 0 : n; }
+
+/* ── BANGUN DAFTAR KAPAL DARI SHEET "STO_KAPAL" (data utama, raw SAP) ──
+   aoa: array-of-arrays, baris[0] = header, sisanya = data
+   supplement: Map(noPoSto -> {jenisMuatan, ...}) hasil gabungan sheet
+               Rencana / Kedatangan (pelengkap, opsional)
+   Pengelompokan: 1 kartu per No. PO STO, produk-produk di dalamnya
+   digabung & dijumlahkan dari semua baris terkait (termasuk baris
+   GI/GR bertahap, blocked stock, dan selisih lebih). */
+function buildShipsFromSTOKapal(aoa, supplement){
+  if(!Array.isArray(aoa) || aoa.length < 2) return [];
+  const headers = aoa[0].map(h => String(h).trim());
+  const idx = name => headers.indexOf(name);
+
+  const cNopo = idx('No. PO STO'), cTglPo = idx('Tgl. PO STO');
+  const cKodeProduk = idx('Kode Produk.'), cProduk = idx('Produk');
+  const cPlantAsal = idx('Plant Asal'), cPlantTujuan = idx('Plant Tujuan');
+  const cEksp = idx('Ekspeditur'), cQtyPO = idx('Qty. PO STO');
+  const cETA = idx('ETA'), cAlat = idx('ID Alat Angkut'), cAlatGR = idx('ID Alat Angkut GR');
+  const cKuantumGI = idx('Kuantum GI'), cTglGI = idx('Tgl. GI');
+  const cKuantumGR = idx('Kuantum GR'), cTglGR = idx('Tgl. GR');
+  const cStatus = idx('Status PO STO'), cKeterangan = idx('Keterangan');
+  const cBlockedQty = idx('Kuan. GR Blocked Stock'), cTglBlocked = idx('Tgl. GR Blocked Stock');
+  const cSelisihQty = idx('Kuan. GR Selisih Lebih'), cTglSelisih = idx('Tgl. GR Selisih Lebih');
+
+  const groups = {}; // nopo -> { rows: [...] }
+  for(let i=1;i<aoa.length;i++){
+    const r = aoa[i];
+    const nopo = String(r[cNopo]||'').trim();
+    if(!nopo) continue;
+    if(!groups[nopo]) groups[nopo] = [];
+    groups[nopo].push(r);
+  }
+
+  const ships = [];
+  Object.keys(groups).forEach(nopo => {
+    const rows = groups[nopo];
+    // produk: sub-grouping berdasarkan Kode Produk (baris tanpa kode = blocked/selisih saja)
+    const prodMap = {};
+    let blockedQty = 0, selisihQty = 0, blockedTgl = '', selisihTgl = '';
+    const ketSet = new Set();
+    let asal='', tujuan='', eksp='', eta='', tglPo='', alat='', alatGR='', status='', tglGImax='', tglGRmax='';
+
+    rows.forEach(r => {
+      if(!asal && r[cPlantAsal]) asal = r[cPlantAsal];
+      if(!tujuan && r[cPlantTujuan]) tujuan = r[cPlantTujuan];
+      if(!eksp && r[cEksp]) eksp = r[cEksp];
+      if(!eta && r[cETA]) eta = r[cETA];
+      if(!tglPo && r[cTglPo]) tglPo = r[cTglPo];
+      if(!alat && r[cAlat]) alat = r[cAlat];
+      if(!alatGR && r[cAlatGR]) alatGR = r[cAlatGR];
+      if(r[cStatus]) status = r[cStatus]; // ambil status terakhir yg terisi
+      if(r[cTglGI]) tglGImax = r[cTglGI];
+      if(r[cTglGR]) tglGRmax = r[cTglGR];
+      if(r[cKeterangan]) ketSet.add(String(r[cKeterangan]));
+
+      blockedQty += toNum(r[cBlockedQty]);
+      if(r[cTglBlocked]) blockedTgl = r[cTglBlocked];
+      selisihQty += toNum(r[cSelisihQty]);
+      if(r[cTglSelisih]) selisihTgl = r[cTglSelisih];
+
+      const kodeProduk = String(r[cKodeProduk]||'').trim();
+      const namaProduk = String(r[cProduk]||'').trim();
+      if(!kodeProduk && !namaProduk) return; // baris blocked/selisih murni, sudah diakumulasi di atas
+
+      const key = kodeProduk || namaProduk;
+      if(!prodMap[key]){
+        prodMap[key] = { nama: namaProduk || kodeProduk, qtyPO: 0, kuantumGI: 0, kuantumGR: 0, tglGR: '' };
+      }
+      const p = prodMap[key];
+      p.qtyPO = Math.max(p.qtyPO, toNum(r[cQtyPO]));       // berulang di tiap baris → ambil max
+      p.kuantumGI = Math.max(p.kuantumGI, toNum(r[cKuantumGI])); // berulang di tiap baris → ambil max
+      p.kuantumGR += toNum(r[cKuantumGR]);                 // GR dicatat bertahap per baris → sum
+      if(r[cTglGR]) p.tglGR = r[cTglGR];
+    });
+
+    const products = Object.values(prodMap).map(p => ({
+      nama: p.nama,
+      do: p.qtyPO,
+      gr: p.kuantumGR,
+      muatan: /CRH|CURAH/i.test(p.nama) ? 'Curah' : (/KANTONG|EA|BAG/i.test(p.nama) ? 'Inbag' : ''),
+      tglGR: fmtDateVal(p.tglGR)
+    }));
+
+    const qty = products.reduce((a,p)=>a+p.do, 0);
+    const gr  = products.reduce((a,p)=>a+p.gr, 0);
+    const sisa = Math.max(0, qty - gr);
+
+    const statusLc = String(status||'').toLowerCase();
+    let statusKey = 'wait';
+    if(statusLc.includes('fully')||statusLc.includes('selesai')||statusLc.includes('close')) statusKey='done';
+    else if(gr>0) statusKey='partial';
+    else if(statusLc.includes('partial')||statusLc.includes('sebagian')) statusKey='partial';
+
+    const sup = (supplement && supplement[nopo]) || {};
+
+    ships.push({
+      id: nopo.replace(/[^a-z0-9]/gi,'_'),
+      nopo,
+      name: alatGR || alat || ('PO ' + nopo),
+      asal, tujuan, ekspeditur: eksp,
+      eta: fmtDateVal(eta),
+      tglGR: fmtDateVal(tglGRmax),
+      tglGI: fmtDateVal(tglGImax),
+      tglPO: fmtDateVal(tglPo),
+      keterangan: Array.from(ketSet).join(' · '),
+      muatan: sup.jenisMuatan || '',
+      voyage: 1,
+      status: statusKey,
+      sandar: gr>0 || statusKey==='done',
+      qty, gr, sisa,
+      blockedQty, blockedTgl: fmtDateVal(blockedTgl),
+      selisihQty, selisihTgl: fmtDateVal(selisihTgl),
+      products
+    });
+  });
+
+  return ships;
+}
+
+/* Ambil pelengkap "Jenis Muatan" per No. PO STO dari sheet Rencana/Kedatangan (best-effort) */
+async function fetchSupplementMap(){
+  const map = {};
+  for(const sheetName of ['Kedatangan','Rencana']){
+    try{
+      const rows = await fetchSheetRows(sheetName);
+      if(!Array.isArray(rows) || rows.length < 2) continue;
+      const headers = rows[0].map(h=>String(h).trim());
+      const cNopo = headers.indexOf('No. PO STO');
+      const cJenis = headers.indexOf('Jenis Muatan');
+      if(cNopo<0 || cJenis<0) continue;
+      rows.slice(1).forEach(r=>{
+        const nopo = String(r[cNopo]||'').trim();
+        const jenis = String(r[cJenis]||'').trim();
+        if(nopo && jenis && !map[nopo]) map[nopo] = { jenisMuatan: jenis };
+      });
+    }catch(e){ console.warn('Gagal ambil pelengkap', sheetName, e); }
+  }
+  return map;
+}
+
+/* ── LOAD DATA ── */
+async function loadData(){
+  const btn = document.getElementById('refreshBtn');
+  const dot = document.getElementById('statusDot');
+  const txt = document.getElementById('statusText');
+  btn.classList.add('spinning');
+  dot.className = 'status-dot dot-loading';
+  txt.textContent = 'Mengambil data terbaru...';
+  document.getElementById('shipList').innerHTML = '<div class="skeleton"></div><div class="skeleton" style="opacity:.7"></div><div class="skeleton" style="opacity:.5"></div>';
+
+  try {
+    const [stoRows, supplement] = await Promise.all([
+      fetchSheetRows('STO_KAPAL'),
+      fetchSupplementMap()
+    ]);
+
+    const ships = buildShipsFromSTOKapal(stoRows, supplement);
+
+    if(ships.length === 0){
+      dot.className = 'status-dot dot-err';
+      txt.textContent = 'Data STO_KAPAL kosong — isi sheet atau upload data terlebih dahulu';
+      DATA = [];
+    } else {
+      DATA = ships;
+      dot.className = 'status-dot dot-ok';
+      txt.textContent = `Data berhasil dimuat — ${DATA.length} kapal/PO STO`;
+      document.getElementById('lastUpdate').textContent = new Date().toLocaleString('id-ID',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'});
+      document.getElementById('dataSource').textContent = 'Sumber: Sheet STO_KAPAL';
+    }
+  } catch(e){
+    console.error('Fetch error:', e);
+    dot.className = 'status-dot dot-err';
+    txt.textContent = `Gagal memuat data: ${e.message}`;
+    DATA = [];
+  }
+
+  btn.classList.remove('spinning');
+  updateStats();
+  applyFilters();
+}
+
+/* ── UPLOAD / REPLACE DATA STO_KAPAL DARI FILE EXCEL ── */
+async function handleUploadSTOFile(event){
+  const file = event.target.files[0];
+  event.target.value = '';
+  if(!file) return;
+  if(typeof XLSX === 'undefined'){ showToast('Library Excel belum siap, coba lagi.','err'); return; }
+
+  if(!confirm(`Upload "${file.name}" akan MENGGANTI seluruh data di sheet STO_KAPAL dengan isi file ini. Lanjutkan?`)) return;
+
+  showToast('Membaca file Excel...', 'loading', 60000);
+  try{
+    const buf = await file.arrayBuffer();
+    const wb = XLSX.read(buf, {type:'array', cellDates:true});
+    const ws = wb.Sheets[wb.SheetNames[0]];
+    const aoa = XLSX.utils.sheet_to_json(ws, {header:1, raw:true, defval:''});
+    if(!aoa || aoa.length < 2){ showToast('File kosong atau format tidak terbaca.','err'); return; }
+
+    const fileHeaders = aoa[0].map(h=>String(h).trim());
+    const expected = ['No. PO STO','Tgl. PO STO','Kode Produk.','Produk'];
+    const looksRight = expected.every(h => fileHeaders.includes(h));
+    if(!looksRight){
+      if(!confirm('Header kolom file ini tidak sama dengan format STO_KAPAL yang diharapkan. Tetap lanjutkan upload?')) {
+        showToast('Upload dibatalkan.','err'); return;
+      }
+    }
+
+    const rows = aoa.slice(1).filter(r => r.some(c => c !== '' && c !== null && c !== undefined));
+
+    showToast(`Mengirim ${rows.length} baris ke Google Sheets...`, 'loading', 60000);
+    const res = await fetch(WRITE_URL, {
+      method:'POST',
+      mode:'cors',
+      headers:{'Content-Type':'text/plain;charset=utf-8'},
+      body: JSON.stringify({ sheet:'STO_KAPAL', mode:'replace', rows })
+    });
+    const result = await res.json();
+    if(result.status === 'ok'){
+      showToast(`✅ Data STO_KAPAL diganti — ${result.rowsWritten} baris tersimpan`, 'ok');
+      loadData();
+    } else {
+      showToast('Gagal upload: ' + (result.message||'unknown error'), 'err', 6000);
+    }
+  }catch(e){
+    console.error(e);
+    showToast('Gagal upload: ' + e.message, 'err', 6000);
+  }
+}
+
+/* ── STATS ── */
+function updateStats(){
+  const total = DATA.length;
+  const sandar = DATA.filter(s=>s.sandar).length;
+  const done = DATA.filter(s=>s.status==='done').length;
+  const pending = DATA.filter(s=>s.status==='partial'||s.status==='wait').length;
+  const ton = DATA.reduce((a,s)=>a+(s.qty||0),0);
+  document.getElementById('s-total').textContent = total;
+  document.getElementById('s-sandar').textContent = sandar;
+  document.getElementById('s-done').textContent = done;
+  document.getElementById('s-pending').textContent = pending;
+  document.getElementById('s-ton').textContent = ton>=1000 ? (ton/1000).toLocaleString('id-ID',{maximumFractionDigits:2})+'K' : fmtN(ton);
+}
+
+/* ── RENDER ── */
+function statusBadge(s, sandar){
+  const anchor = sandar ? '<span class="badge badge-anchor"><svg width="9" height="9" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" style="vertical-align:-1px"><circle cx="12" cy="5" r="3"/><line x1="12" y1="8" x2="12" y2="22"/><path d="M6 12H2a10 10 0 0 0 20 0h-4"/></svg> Sandar</span>' : '';
+  if(s==='done')    return anchor+'<span class="badge badge-done"><svg width="9" height="9" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" style="vertical-align:-1px"><polyline points="20 6 9 17 4 12"/></svg> Selesai</span>';
+  if(s==='partial') return anchor+'<span class="badge badge-partial"><svg width="9" height="9" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" style="vertical-align:-1px"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg> Sebagian</span>';
+  return anchor+'<span class="badge badge-wait"><svg width="9" height="9" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" style="vertical-align:-1px"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg> Belum</span>';
+}
+
+function buildCard(s, idx){
+  const p = pct(s.gr, s.qty);
+  const fc = fillColor(p);
+  const isOpen = openCards[s.id];
+  const sisa = s.sisa != null ? s.sisa : Math.max(0, (s.qty||0)-(s.gr||0));
+
+  const prodList = (s.products && s.products.length > 0)
+    ? s.products
+    : [{nama: s.muatan || 'Muatan', do: s.qty, gr: s.gr, muatan: s.muatan || '', tglGR: s.tglGR||''}];
+
+  const prods = prodList.map(pr=>{
+    const prDo  = parseFloat(pr.do)  || 0;
+    const prGr  = parseFloat(pr.gr)  || 0;
+    const pp = pct(prGr, prDo);
+    const prodSisa = Math.max(0, prDo - prGr);
+    // Deteksi jenis: CRH di nama produk = Curah, tidak ada nama = Inbag
+    const isCurah = (pr.nama||'').toUpperCase().includes('CRH');
+    const isInbag = !pr.nama || pr.nama==='Muatan';
+    const jenisLabel = pr.muatan==='Curah'||isCurah ? '<span style="background:rgba(59,130,246,0.15);color:var(--blue);border-radius:4px;padding:1px 6px;font-size:0.65rem;font-family:var(--font-mono)">CURAH</span>'
+                     : pr.muatan==='Inbag'||isInbag  ? '<span style="background:rgba(0,201,167,0.12);color:var(--teal);border-radius:4px;padding:1px 6px;font-size:0.65rem;font-family:var(--font-mono)">INBAG</span>'
+                     : pr.muatan ? `<span style="background:var(--bg3);color:var(--muted);border-radius:4px;padding:1px 6px;font-size:0.65rem;font-family:var(--font-mono)">${pr.muatan}</span>` : '';
+    const tglGRLine = pr.tglGR ? `<div style="font-size:0.67rem;color:var(--muted);margin-top:2px;font-family:var(--font-mono)">Tgl. GR: ${pr.tglGR}</div>` : '';
+    return `<div class="prod-item">
+      <div>
+        <div class="prod-name">${pr.nama||'Muatan'} ${jenisLabel}</div>
+        ${tglGRLine}
+      </div>
+      <div class="prod-right">
+        <div class="prod-do">${fmtN(prDo)} ton</div>
+        <div class="prod-gr">GR: ${fmtN(prGr)} ton</div>
+        ${prodSisa>0.01?`<div class="prod-sisa" style="color:var(--amber)">Sisa: ${fmtN(prodSisa)} ton</div>`:''}
+        <div class="prod-pbar"><div class="prod-pfill" style="width:${pp}%;background:${fillColor(pp)}"></div></div>
+      </div>
+    </div>`;
+  }).join('');
+
+  const sisaBlock = s.status==='partial'&&sisa>0.01 ? `
+    <div class="sisa-highlight">
+      <div>
+        <div class="sisa-label">⚠ Sisa muatan belum dibongkar</div>
+        <div style="font-size:0.68rem;color:var(--muted);margin-top:2px;font-family:var(--font-mono)">dari total ${fmtN(s.qty)} ton PO</div>
+      </div>
+      <div class="sisa-value">${fmtN(sisa)} ton</div>
+    </div>` : '';
+
+  return `<div class="ship-card"
+    data-status="${s.status}"
+    data-sandar="${s.sandar}"
+    data-search="${(s.name+' '+(s.ekspeditur||'')+' '+(s.products||[]).map(x=>x.nama).join(' ')).toLowerCase()}"
+    style="animation-delay:${0.1+idx*0.05}s">
+    <div class="ship-row" onclick="toggleCard('${s.id}')">
+      <div>
+        <div class="sname">🚢 ${s.name}</div>
+        <div class="sroute">
+          <svg width="10" height="10" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+          <span>${s.asal||'—'}</span>
+          <svg width="10" height="10" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          <svg width="10" height="10" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+          <span>${s.tujuan||'—'}</span>
+        </div>
+      </div>
+      <div>
+        <div class="cell-text">
+          <svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="vertical-align:-1px;margin-right:3px;opacity:0.5"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>${s.ekspeditur||'—'}
+        </div>
+        <div class="cell-sub">
+          ${s.muatan==='Curah'?'🌾':'📦'} ${s.muatan||''} · 🔁 ${s.voyage||1}× voyage
+        </div>
+      </div>
+      <div class="cell-text">
+        <svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="vertical-align:-1px;margin-right:3px;opacity:0.5"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>${s.eta||'—'}
+      </div>
+      <div class="cell-text">${fmtN(s.qty)}</div>
+      <div class="cell-text">${fmtN(s.gr)}</div>
+      <div style="display:flex;gap:4px;flex-wrap:wrap;align-items:center">${statusBadge(s.status,s.sandar)}</div>
+      <div class="prog-cell">
+        <div class="prog-bar-wrap"><div class="prog-fill" style="width:${p}%;background:${fc}"></div></div>
+        <div class="prog-pct">${p}%</div>
+      </div>
+      <button class="chevron-btn${isOpen?' open':''}" id="chv-${s.id}" onclick="event.stopPropagation();toggleCard('${s.id}')" aria-label="Toggle">
+        <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg>
+      </button>
+    </div>
+    <div class="detail-panel${isOpen?' open':''}" id="det-${s.id}">
+      <div class="detail-inner">
+        <div class="detail-grid">
+          <div class="det-section">
+            <h4><svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="vertical-align:-1px;margin-right:5px"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>Detail Produk &amp; Realisasi Bongkar</h4>
+            ${prods}
+            ${sisaBlock}
+          </div>
+          <div class="det-section">
+            <h4><svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="vertical-align:-1px;margin-right:5px"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>Informasi Pengiriman</h4>
+            <div class="info-rows">
+              <div class="info-row"><span class="info-key">🏭 Plant asal</span><span class="info-val">${s.asal||'—'}</span></div>
+              <div class="info-row"><span class="info-key">🏬 Gudang tujuan</span><span class="info-val">${s.tujuan||'—'}</span></div>
+              <div class="info-row"><span class="info-key">🚛 Ekspeditur</span><span class="info-val">${s.ekspeditur||'—'}</span></div>
+              <div class="info-row"><span class="info-key">${s.muatan==='Curah'?'🌾':'📦'} Jenis muatan</span><span class="info-val">${s.muatan||'—'}</span></div>
+              <div class="info-row"><span class="info-key">🔁 Jumlah voyage</span><span class="info-val">${s.voyage||1}×</span></div>
+              <div class="info-row"><span class="info-key">📋 No. PO STO</span><span class="info-val" style="font-family:var(--font-mono);font-size:0.73rem">${s.nopo||'—'}</span></div>
+              <div class="info-row"><span class="info-key">🗓 Tgl. PO STO</span><span class="info-val" style="font-family:var(--font-mono);font-size:0.73rem">${s.tglPO||'—'}</span></div>
+              <div class="info-row"><span class="info-key">📅 ETA / Delivery</span><span class="info-val">${s.eta||'—'}</span></div>
+              <div class="info-row"><span class="info-key">🚚 Tgl. GI (Plant Asal)</span><span class="info-val" style="color:var(--muted)">${s.tglGI||'—'}</span></div>
+              <div class="info-row"><span class="info-key">✅ Tgl. Penerimaan (GR)</span><span class="info-val" style="color:var(--teal)">${s.tglGR||'—'}</span></div>
+              <div class="info-row"><span class="info-key">📦 Qty PO (ton)</span><span class="info-val">${fmtN(s.qty)}</span></div>
+              <div class="info-row"><span class="info-key">✅ Qty GR (ton)</span><span class="info-val">${fmtN(s.gr)}</span></div>
+              <div class="info-row"><span class="info-key">⚠️ Sisa bongkar</span><span class="info-val" style="color:${sisa>0.01?'var(--amber)':'var(--green)'}">${fmtN(sisa)} ton</span></div>
+              <div class="info-row"><span class="info-key">📊 Realisasi</span><span class="info-val" style="color:${fc}">${p}%</span></div>
+            </div>
+            ${s.keterangan?`<div class="keterangan-box"><svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="flex-shrink:0;margin-top:1px"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>${s.keterangan}</div>`:''}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+
+function toggleCard(id){
+  openCards[id] = !openCards[id];
+  const det = document.getElementById('det-'+id);
+  const chv = document.getElementById('chv-'+id);
+  if(det) det.classList.toggle('open', !!openCards[id]);
+  if(chv) chv.classList.toggle('open', !!openCards[id]);
+}
+
+function render(list){
+  const el = document.getElementById('shipList');
+  const nr = document.getElementById('noResult');
+  if(!list||list.length===0){ el.innerHTML=''; nr.style.display='block'; return; }
+  nr.style.display='none';
+  el.innerHTML = list.map((s,i)=>buildCard(s,i)).join('');
+}
+
+function applyFilters(){
+  const q = (document.getElementById('searchInput').value||'').toLowerCase();
+  const filtered = DATA.filter(s=>{
+    const matchSearch = !q ||
+      (s.name||'').toLowerCase().includes(q) ||
+      (s.ekspeditur||'').toLowerCase().includes(q) ||
+      (s.products||[]).some(p=>(p.nama||'').toLowerCase().includes(q));
+    const matchFilter =
+      activeFilter==='all' ||
+      (activeFilter==='done'&&s.status==='done') ||
+      (activeFilter==='pending'&&(s.status==='partial'||s.status==='wait')) ||
+      (activeFilter==='sandar'&&s.sandar);
+    return matchSearch && matchFilter;
+  });
+  render(filtered);
+}
+
+function setFilter(f, btn){
+  activeFilter = f;
+  document.querySelectorAll('.fbtn').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+  applyFilters();
+}
+
+document.getElementById('searchInput').addEventListener('input', applyFilters);
+
+function toggleExportMenu(e){
+  e.stopPropagation();
+  document.getElementById('exportMenu').classList.toggle('open');
+}
+document.addEventListener('click', () => document.getElementById('exportMenu').classList.remove('open'));
+
+/* ── EXPORT EXCEL ── */
+function exportExcel(){
+  document.getElementById('exportMenu').classList.remove('open');
+  if(typeof XLSX === 'undefined'){ alert('Library Excel belum siap, coba lagi.'); return; }
+
+  const wb = XLSX.utils.book_new();
+
+  // ── Sheet 1: Rekap per Kapal ──
+  const hdr = ['Nama Kapal','No. PO STO','Tgl. PO STO','Asal','Gudang Tujuan','Ekspeditur','ETA','Tgl. GI (Plant Asal)','Tgl. GR (Penerimaan)','Status','Jenis Muatan','Voyage','Qty PO (ton)','Qty GR (ton)','Sisa (ton)','Realisasi (%)','Keterangan'];
+  const rows = [hdr];
+  DATA.forEach(s => {
+    const st   = s.status==='done'?'Selesai':s.status==='partial'?'Sebagian':'Belum diterima';
+    const sisa = Math.max(0,(s.qty||0)-(s.gr||0));
+    rows.push([
+      s.name, s.nopo||'', s.tglPO||'', s.asal||'', s.tujuan||'', s.ekspeditur||'',
+      s.eta||'', s.tglGI||'', s.tglGR||'', st, s.muatan||'', s.voyage||1,
+      parseFloat((s.qty||0).toFixed(3)), parseFloat((s.gr||0).toFixed(3)),
+      parseFloat(sisa.toFixed(3)), pct(s.gr,s.qty)+'%', s.keterangan||''
+    ]);
+    (s.products||[]).forEach(pr => {
+      const ps = Math.max(0,(pr.do||0)-(pr.gr||0));
+      rows.push([
+        '  └ '+pr.nama, '', '', '', '', '', '', pr.tglGI||'', pr.tglGR||'', '',
+        pr.muatan||'', '',
+        parseFloat((pr.do||0).toFixed(3)), parseFloat((pr.gr||0).toFixed(3)),
+        parseFloat(ps.toFixed(3)), pct(pr.gr,pr.do)+'%', ''
+      ]);
+    });
+  });
+  const ws1 = XLSX.utils.aoa_to_sheet(rows);
+  ws1['!cols'] = [22,14,13,26,26,22,13,14,14,13,11,8,13,13,12,12,28].map(w=>({wch:w}));
+  ws1['!freeze'] = { xSplit:0, ySplit:1 };
+  XLSX.utils.book_append_sheet(wb, ws1, 'Rekap Kapal');
+
+  // ── Sheet 2: Detail Produk flat ──
+  const hdr2 = ['Nama Kapal','No. PO STO','Tgl. PO STO','Gudang Tujuan','Produk','Jenis Muatan','Qty DO (ton)','Qty GR (ton)','Sisa (ton)','Realisasi (%)','Tgl. GI (Plant Asal)','Tgl. GR (Penerimaan)'];
+  const rows2 = [hdr2];
+  DATA.forEach(s => {
+    (s.products||[]).forEach(pr => {
+      const ps = Math.max(0,(pr.do||0)-(pr.gr||0));
+      rows2.push([
+        s.name, s.nopo||'', s.tglPO||'', s.tujuan||'', pr.nama||'', pr.muatan||'',
+        parseFloat((pr.do||0).toFixed(3)), parseFloat((pr.gr||0).toFixed(3)),
+        parseFloat(ps.toFixed(3)), pct(pr.gr,pr.do)+'%', pr.tglGI||'', pr.tglGR||''
+      ]);
+    });
+  });
+  const ws2 = XLSX.utils.aoa_to_sheet(rows2);
+  ws2['!cols'] = [22,14,13,26,34,11,13,13,12,12,14,14].map(w=>({wch:w}));
+  ws2['!freeze'] = { xSplit:0, ySplit:1 };
+  XLSX.utils.book_append_sheet(wb, ws2, 'Detail Produk');
+
+  const ts = new Date().toLocaleDateString('id-ID',{day:'2-digit',month:'2-digit',year:'numeric'}).replace(/\//g,'-');
+  XLSX.writeFile(wb, `Rekap_Kapal_Lampung_${ts}.xlsx`);
+}
+
+/* ── EXPORT PDF — TEMA TERANG ── */
+function exportPDF(){
+  document.getElementById('exportMenu').classList.remove('open');
+  if(typeof window.jspdf === 'undefined'){ alert('Library PDF belum siap, coba lagi.'); return; }
+  const { jsPDF } = window.jspdf;
+
+  const doc = new jsPDF({ orientation:'landscape', unit:'mm', format:'a4' });
+  const ts  = new Date().toLocaleDateString('id-ID',{day:'2-digit',month:'long',year:'numeric'});
+
+  // Header terang
+  doc.setFillColor(0, 122, 104); // teal gelap
+  doc.rect(0, 0, 297, 26, 'F');
+  doc.setTextColor(255,255,255);
+  doc.setFontSize(13);
+  doc.setFont('helvetica','bold');
+  doc.text('Dashboard Penerimaan Kapal — Lampung', 14, 11);
+  doc.setFontSize(8);
+  doc.setFont('helvetica','normal');
+  doc.text(`Dicetak: ${ts}   |   Total: ${DATA.length} kapal   |   Sumber: Google Sheets`, 14, 19);
+
+  // Ringkasan statistik
+  const totalQty = DATA.reduce((a,s)=>a+(s.qty||0),0);
+  const totalGR  = DATA.reduce((a,s)=>a+(s.gr||0),0);
+  const totalSisa= Math.max(0, totalQty-totalGR);
+  const pctTotal = totalQty>0?Math.round(totalGR/totalQty*100):0;
+  const cntDone  = DATA.filter(s=>s.status==='done').length;
+  const cntPart  = DATA.filter(s=>s.status==='partial').length;
+  const cntWait  = DATA.filter(s=>s.status==='wait').length;
+
+  doc.setFillColor(248,250,252);
+  doc.rect(0,26,297,18,'F');
+  doc.setDrawColor(220,220,220);
+  doc.line(0,44,297,44);
+  const stats = [
+    [`Total Qty PO`, `${totalQty.toLocaleString('id-ID',{maximumFractionDigits:0})} ton`],
+    [`Total GR`, `${totalGR.toLocaleString('id-ID',{maximumFractionDigits:0})} ton`],
+    [`Sisa Bongkar`, `${totalSisa.toLocaleString('id-ID',{maximumFractionDigits:0})} ton`],
+    [`Realisasi`, `${pctTotal}%`],
+    [`Selesai`, `${cntDone} kapal`],
+    [`Sebagian`, `${cntPart} kapal`],
+    [`Belum`, `${cntWait} kapal`],
+  ];
+  stats.forEach((st,i)=>{
+    const x = 14 + i*40;
+    doc.setFontSize(6.5); doc.setTextColor(100,116,139); doc.setFont('helvetica','normal');
+    doc.text(st[0], x, 33);
+    doc.setFontSize(9); doc.setTextColor(15,23,42); doc.setFont('helvetica','bold');
+    doc.text(st[1], x, 41);
+  });
+
+  // Tabel utama
+  const head = [['Kapal','No. PO STO','Tgl. PO','Asal','Tujuan','Ekspeditur','ETA','Tgl. GI','Tgl. GR','Qty PO','GR','Sisa','%','Status']];
+  const body = [];
+  DATA.forEach(s => {
+    const st   = s.status==='done'?'Selesai':s.status==='partial'?'Sebagian':'Belum';
+    const sisa = Math.max(0,(s.qty||0)-(s.gr||0));
+    const p    = pct(s.gr,s.qty);
+    body.push([
+      s.name, s.nopo||'—', s.tglPO||'—',
+      (s.asal||'').replace(/^(GD |PEL |PKG )/,''),
+      (s.tujuan||'').replace(/^(GD |PEL |PKG )/,''),
+      s.ekspeditur||'—',
+      s.eta||'—', s.tglGI||'—', s.tglGR||'—',
+      (s.qty||0).toLocaleString('id-ID',{maximumFractionDigits:0}),
+      (s.gr||0).toLocaleString('id-ID',{maximumFractionDigits:0}),
+      sisa.toLocaleString('id-ID',{maximumFractionDigits:0}),
+      p+'%', st
+    ]);
+    (s.products||[]).forEach(pr => {
+      const isCurah = (pr.nama||'').toUpperCase().includes('CRH');
+      body.push([
+        '   └ '+(pr.nama||'')+(isCurah?' [CRH]':' [Inbag]'),
+        '','','','','','', pr.tglGI||'', pr.tglGR||'',
+        (pr.do||0).toLocaleString('id-ID',{maximumFractionDigits:0}),
+        (pr.gr||0).toLocaleString('id-ID',{maximumFractionDigits:0}),
+        Math.max(0,(pr.do||0)-(pr.gr||0)).toLocaleString('id-ID',{maximumFractionDigits:0}),
+        pct(pr.gr,pr.do)+'%', ''
+      ]);
+    });
+  });
+
+  doc.autoTable({
+    startY: 47,
+    head, body,
+    theme: 'striped',
+    styles: {
+      fontSize: 7, font:'helvetica', cellPadding:2.2,
+      textColor:[15,23,42], fillColor:[255,255,255],
+      lineColor:[226,232,240], lineWidth:0.25
+    },
+    headStyles: { fillColor:[0,122,104], textColor:[255,255,255], fontStyle:'bold', fontSize:7.5 },
+    alternateRowStyles: { fillColor:[248,250,252] },
+    columnStyles: {
+      0:{cellWidth:30}, 1:{cellWidth:20,font:'courier',fontSize:6},
+      2:{cellWidth:13}, 3:{cellWidth:20}, 4:{cellWidth:22}, 5:{cellWidth:22},
+      6:{cellWidth:13}, 7:{cellWidth:13}, 8:{cellWidth:13},
+      9:{cellWidth:12,halign:'right'}, 10:{cellWidth:12,halign:'right'},
+      11:{cellWidth:12,halign:'right'}, 12:{cellWidth:9,halign:'center'},
+      13:{cellWidth:14,halign:'center'}
+    },
+    didParseCell(data){
+      if(data.row.raw && String(data.row.raw[0]).startsWith('   └')){
+        data.cell.styles.textColor=[100,116,139]; data.cell.styles.fontSize=6;
+      }
+      if(data.column.index===13 && data.section==='body'){
+        const v=String(data.cell.raw);
+        if(v==='Selesai')  { data.cell.styles.textColor=[21,128,61]; data.cell.styles.fontStyle='bold'; }
+        if(v==='Sebagian') { data.cell.styles.textColor=[161,98,7];  data.cell.styles.fontStyle='bold'; }
+        if(v==='Belum')    { data.cell.styles.textColor=[185,28,28]; data.cell.styles.fontStyle='bold'; }
+      }
+      if(data.column.index===12 && data.section==='body'){
+        const n=parseInt(data.cell.raw)||0;
+        if(n>=100) data.cell.styles.textColor=[21,128,61];
+        else if(n>=50) data.cell.styles.textColor=[161,98,7];
+        else if(n>0) data.cell.styles.textColor=[185,28,28];
+      }
+    },
+    margin:{ left:14, right:14 },
+  });
+
+  // Footer
+  const pageCount = doc.internal.getNumberOfPages();
+  for(let i=1;i<=pageCount;i++){
+    doc.setPage(i);
+    doc.setFontSize(7); doc.setTextColor(148,163,184); doc.setFont('helvetica','normal');
+    doc.text(`Halaman ${i} / ${pageCount}`, 283, 205, {align:'right'});
+    doc.text('Dashboard Penerimaan Kapal — Lampung', 14, 205);
+  }
+
+  const ts2 = new Date().toLocaleDateString('id-ID',{day:'2-digit',month:'2-digit',year:'numeric'}).replace(/\//g,'-');
+  doc.save(`Rekap_Kapal_Lampung_${ts2}.pdf`);
+}
+
+/* ══════════════════════════════════════════
+   CHART ENGINE — native Canvas, no library
+   ══════════════════════════════════════════ */
+
+let activeChart = 'bar';
+
+function switchChart(tab){
+  activeChart = tab;
+  document.getElementById('chartBar').style.display   = tab==='bar'   ? '' : 'none';
+  document.getElementById('chartDonut').style.display = tab==='donut' ? '' : 'none';
+  document.getElementById('chartTrend').style.display = tab==='trend' ? '' : 'none';
+  ['tabBar','tabDonut','tabTrend'].forEach(id => document.getElementById(id).classList.remove('on'));
+  const map = {bar:'tabBar',donut:'tabDonut',trend:'tabTrend'};
+  document.getElementById(map[tab]).classList.add('on');
+  if(tab==='bar')   drawBarChart();
+  if(tab==='donut') drawDonutChart();
+  if(tab==='trend') drawHBar();
+}
+
+function renderCharts(){
+  if(!DATA.length){ document.getElementById('chartSection').style.display='none'; return; }
+  document.getElementById('chartSection').style.display='';
+  drawBarChart();
+}
+
+/* — Helper: CSS variable to hex for canvas — */
+function cssVar(v){
+  return getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+}
+
+/* ── BAR CHART (per kapal) ── */
+function drawBarChart(){
+  const canvas = document.getElementById('barCanvas');
+  if(!canvas) return;
+  const ships = DATA.slice(0,12); // max 12 kapal
+  if(!ships.length) return;
+
+  const dpr = window.devicePixelRatio || 1;
+  const W = canvas.parentElement.scrollWidth || 700;
+  const H = 280;
+  canvas.width  = W * dpr;
+  canvas.height = H * dpr;
+  canvas.style.width  = W + 'px';
+  canvas.style.height = H + 'px';
+  const ctx = canvas.getContext('2d');
+  ctx.scale(dpr, dpr);
+
+  const PAD = { top:20, right:20, bottom:64, left:60 };
+  const cW = W - PAD.left - PAD.right;
+  const cH = H - PAD.top  - PAD.bottom;
+  const isDark = document.documentElement.getAttribute('data-theme') !== 'light';
+  const textColor   = isDark ? '#7d8590' : '#6b7280';
+  const gridColor   = isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)';
+  const labelColor  = isDark ? '#e6edf3' : '#1a1e27';
+
+  // Scale
+  const maxVal = Math.max(...ships.map(s => Math.max(s.qty||0, s.gr||0)), 1);
+  const niceMax = Math.ceil(maxVal / 1000) * 1000 || 1000;
+
+  // Grid lines
+  ctx.clearRect(0, 0, W, H);
+  const steps = 5;
+  for(let i=0;i<=steps;i++){
+    const y = PAD.top + cH - (i/steps)*cH;
+    const val = Math.round((i/steps)*niceMax);
+    ctx.beginPath(); ctx.strokeStyle = gridColor; ctx.lineWidth = 1;
+    ctx.moveTo(PAD.left, y); ctx.lineTo(PAD.left+cW, y); ctx.stroke();
+    ctx.fillStyle = textColor; ctx.font = `10px var(--font-mono, monospace)`;
+    ctx.textAlign = 'right';
+    ctx.fillText(val>=1000?(val/1000).toFixed(0)+'K':val, PAD.left-6, y+4);
+  }
+
+  // Bars
+  const groupW = cW / ships.length;
+  const barW   = Math.min(groupW * 0.35, 28);
+  const gap    = barW * 0.5;
+  const colors = {
+    po:  isDark ? 'rgba(88,166,255,0.45)' : 'rgba(37,99,235,0.35)',
+    gr:  isDark ? '#39d2c0' : '#0e9d87',
+    done: isDark ? '#3fb950':'#16a34a',
+    partial: isDark ? '#ffa657':'#d97706',
+    wait: isDark ? '#ff7b72':'#dc2626'
+  };
+
+  // Store hit rects for interaction
+  canvas._bars = [];
+  ships.forEach((s,i)=>{
+    const cx = PAD.left + groupW*(i+0.5);
+    const qtyH  = ((s.qty||0)/niceMax) * cH;
+    const grH   = ((s.gr||0)/niceMax)  * cH;
+    const p     = pct(s.gr, s.qty);
+    const grColor = p>=100?colors.done:p>=50?colors.partial:colors.wait;
+
+    // PO bar (background, muted)
+    const x1 = cx - barW - gap/2;
+    ctx.fillStyle = colors.po;
+    ctx.beginPath();
+    const r1 = 4;
+    const y1 = PAD.top + cH - qtyH;
+    ctx.roundRect(x1, y1, barW, qtyH, [r1,r1,0,0]);
+    ctx.fill();
+
+    // GR bar
+    const x2 = cx + gap/2;
+    ctx.fillStyle = grColor;
+    ctx.beginPath();
+    const y2 = PAD.top + cH - grH;
+    ctx.roundRect(x2, y2, barW, grH, [4,4,0,0]);
+    ctx.fill();
+
+    // Percentage label on top of GR bar
+    ctx.fillStyle = grColor;
+    ctx.font = `bold 9px var(--font-mono, monospace)`;
+    ctx.textAlign = 'center';
+    if(grH > 8) ctx.fillText(p+'%', x2+barW/2, y2 - 3);
+
+    // X-axis label
+    const name = s.name.length > 10 ? s.name.substring(0,9)+'…' : s.name;
+    ctx.fillStyle = labelColor; ctx.font = `10px var(--font-sans, sans-serif)`;
+    ctx.textAlign = 'center';
+    ctx.save();
+    ctx.translate(cx, PAD.top+cH+10);
+    ctx.rotate(-0.4);
+    ctx.fillText(name, 0, 0);
+    ctx.restore();
+
+    // Store bar rect for tooltip
+    canvas._bars.push({ x: x1, y: PAD.top, w: barW*2+gap, h: cH, ship: s });
+  });
+
+  // Legend
+  const lgY = H - 12;
+  [[colors.po,'Qty PO'],[isDark?'#39d2c0':'#0e9d87','GR Realisasi']].forEach(([c,l],i)=>{
+    const lx = PAD.left + i*120;
+    ctx.fillStyle = c; ctx.fillRect(lx, lgY-8, 12, 8);
+    ctx.fillStyle = textColor; ctx.font = '10px var(--font-sans, monospace)';
+    ctx.textAlign = 'left'; ctx.fillText(l, lx+16, lgY-1);
+  });
+
+  // Mouse interaction
+  canvas.onmousemove = function(e){
+    const rect = canvas.getBoundingClientRect();
+    const mx = (e.clientX - rect.left) * (W / rect.width);
+    const my = (e.clientY - rect.top)  * (H / rect.height);
+    const tip = document.getElementById('barTooltip');
+    const hit = canvas._bars.find(b => mx>=b.x && mx<=b.x+b.w && my>=b.y && my<=b.y+b.h);
+    if(hit){
+      const s = hit.ship;
+      const p2 = pct(s.gr, s.qty);
+      const sisa = Math.max(0,(s.qty||0)-(s.gr||0));
+      tip.style.display='';
+      tip.innerHTML = `<span style="color:var(--teal);font-weight:700">🚢 ${s.name}</span>
+        &nbsp;·&nbsp; Qty PO: <span style="color:var(--blue)">${fmtN(s.qty)} ton</span>
+        &nbsp;·&nbsp; GR: <span style="color:var(--green)">${fmtN(s.gr)} ton</span>
+        &nbsp;·&nbsp; Sisa: <span style="color:var(--amber)">${fmtN(sisa)} ton</span>
+        &nbsp;·&nbsp; Realisasi: <strong style="color:${p2>=100?'var(--green)':p2>=50?'var(--amber)':'var(--red)'}">${p2}%</strong>`;
+      canvas.style.cursor='pointer';
+    } else {
+      tip.style.display='none';
+      canvas.style.cursor='default';
+    }
+  };
+  canvas.onmouseleave = function(){
+    document.getElementById('barTooltip').style.display='none';
+    canvas.style.cursor='default';
+  };
+}
+
+/* ── DONUT CHART (status) ── */
+function drawDonutChart(){
+  const canvas = document.getElementById('donutCanvas');
+  if(!canvas) return;
+  const done    = DATA.filter(s=>s.status==='done').length;
+  const partial = DATA.filter(s=>s.status==='partial').length;
+  const wait    = DATA.filter(s=>s.status==='wait').length;
+  const total   = DATA.length || 1;
+
+  const isDark = document.documentElement.getAttribute('data-theme') !== 'light';
+  const segments = [
+    { label:'Selesai',   count:done,    color: isDark?'#3fb950':'#16a34a', icon:'✅' },
+    { label:'Sebagian',  count:partial, color: isDark?'#ffa657':'#d97706', icon:'⚠️' },
+    { label:'Belum',     count:wait,    color: isDark?'#ff7b72':'#dc2626', icon:'❌' },
+  ];
+
+  const W=240, H=240, cx=120, cy=120, R=90, r=52;
+  canvas.width=W; canvas.height=H;
+  const ctx = canvas.getContext('2d');
+
+  let angle = -Math.PI/2;
+  let hovered = -1;
+
+  function draw(hov){
+    ctx.clearRect(0,0,W,H);
+    // Shadow ring
+    ctx.beginPath(); ctx.arc(cx,cy,R+2,0,Math.PI*2);
+    ctx.strokeStyle = isDark?'rgba(0,0,0,0.3)':'rgba(0,0,0,0.1)'; ctx.lineWidth=4; ctx.stroke();
+
+    segments.forEach((seg,i)=>{
+      const slice = (seg.count/total)*Math.PI*2;
+      const isHov = hov===i;
+      const rr = isHov ? R+8 : R;
+      ctx.beginPath();
+      ctx.moveTo(cx,cy);
+      ctx.arc(cx,cy,rr,angle,angle+slice);
+      ctx.closePath();
+      ctx.fillStyle = seg.color;
+      ctx.globalAlpha = seg.count===0?0.2:1;
+      ctx.fill();
+      ctx.globalAlpha=1;
+
+      // Label inside if big enough
+      if(seg.count>0 && slice > 0.4){
+        const mid = angle + slice/2;
+        const lx = cx + Math.cos(mid)*(R*0.65);
+        const ly = cy + Math.sin(mid)*(R*0.65);
+        ctx.fillStyle='#fff'; ctx.font='bold 13px sans-serif'; ctx.textAlign='center'; ctx.textBaseline='middle';
+        ctx.fillText(seg.count, lx, ly);
+      }
+      angle += slice;
+    });
+    angle = -Math.PI/2;
+
+    // Center hole
+    ctx.beginPath(); ctx.arc(cx,cy,r,0,Math.PI*2);
+    ctx.fillStyle = isDark?'#161b22':'#ffffff'; ctx.fill();
+
+    // Center text
+    const pctDone = Math.round((done/total)*100);
+    ctx.fillStyle = isDark?'#3fb950':'#16a34a';
+    ctx.font='bold 22px var(--font-display,sans-serif)';
+    ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillText(pctDone+'%', cx, cy-8);
+    ctx.fillStyle = isDark?'#7d8590':'#6b7280';
+    ctx.font='11px var(--font-mono,monospace)';
+    ctx.fillText('selesai', cx, cy+12);
+  }
+
+  draw(-1);
+
+  // Legend
+  const leg = document.getElementById('donutLegend');
+  leg.innerHTML = segments.map((s,i)=>`
+    <div style="display:flex;align-items:center;gap:10px;cursor:default"
+      onmouseenter="(function(){drawDonutHov(${i})})()"
+      onmouseleave="(function(){drawDonutHov(-1)})()">
+      <div style="width:14px;height:14px;border-radius:4px;background:${s.color};flex-shrink:0"></div>
+      <div>
+        <div style="font-size:0.78rem;font-family:var(--font-display);font-weight:600;color:var(--text)">${s.icon} ${s.label}</div>
+        <div style="font-size:0.68rem;font-family:var(--font-mono);color:var(--muted)">${s.count} kapal · ${Math.round(s.count/total*100)}%</div>
+        <div style="font-size:0.68rem;font-family:var(--font-mono);color:var(--muted)">${fmtN(DATA.filter(d=>
+          s.label==='Selesai'?d.status==='done':s.label==='Sebagian'?d.status==='partial':d.status==='wait'
+        ).reduce((a,d)=>a+(d.qty||0),0))} ton</div>
+      </div>
+    </div>
+  `).join('');
+
+  window._donutCtx = ctx;
+  window._donutSegments = segments;
+  window._donutTotal = total;
+  window._donutDraw = draw;
+}
+
+window.drawDonutHov = function(i){
+  if(window._donutDraw) window._donutDraw(i);
+};
+
+/* ── HORIZONTAL BAR (ranking muatan) ── */
+function drawHBar(){
+  const el = document.getElementById('hbarChart');
+  if(!el || !DATA.length) return;
+  const sorted = [...DATA].sort((a,b)=>(b.qty||0)-(a.qty||0)).slice(0,10);
+  const maxQty = sorted[0].qty || 1;
+  const isDark = document.documentElement.getAttribute('data-theme') !== 'light';
+
+  el.innerHTML = sorted.map((s,i)=>{
+    const p = pct(s.gr, s.qty);
+    const pctPO = (s.qty/maxQty*100).toFixed(1);
+    const pctGR = (s.gr/maxQty*100).toFixed(1);
+    const grColor = p>=100?(isDark?'#3fb950':'#16a34a'):p>=50?(isDark?'#ffa657':'#d97706'):(isDark?'#ff7b72':'#dc2626');
+    const medals = ['🥇','🥈','🥉'];
+    const medal = medals[i]||`<span style="font-size:0.7rem;font-family:var(--font-mono);color:var(--muted)">#${i+1}</span>`;
+    return `<div class="hbar-row">
+      <div class="hbar-label">
+        <span>${medal} ${s.name}</span>
+        <span>${fmtN(s.gr)} / ${fmtN(s.qty)} ton &nbsp; <strong style="color:${grColor}">${p}%</strong></span>
+      </div>
+      <div class="hbar-track">
+        <div class="hbar-fill-po" style="width:${pctPO}%;background:${isDark?'rgba(88,166,255,0.5)':'rgba(37,99,235,0.35)'}"></div>
+        <div class="hbar-fill-gr" style="width:${pctGR}%;background:${grColor}"></div>
+        <div class="hbar-pct">${p}%</div>
+      </div>
+    </div>`;
+  }).join('');
+
+  // Animate in
+  setTimeout(()=>{
+    el.querySelectorAll('.hbar-fill-gr,.hbar-fill-po').forEach(el => el.style.transition='width 0.8s cubic-bezier(0.4,0,0.2,1)');
+  },50);
+}
+
+/* Patch updateStats to also render charts */
+const _origUpdateStats = updateStats;
+window.updateStats = function(){
+  _origUpdateStats();
+  renderCharts();
+};
+
+// Auto-load on start
+loadData();
+</script>
+</body>
+</html>
